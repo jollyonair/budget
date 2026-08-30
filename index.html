@@ -316,7 +316,7 @@
         <div class="two-col">
           <div class="field">
             <label>Groceries &amp; food</label>
-            <input type="number" id="c_groceries" value="388.27" step="5" oninput="calc()">
+            <input type="number" id="c_groceries" value="280" step="5" oninput="calc()">
           </div>
           <div class="field">
             <label>Takeaway &amp; dining</label>
@@ -326,7 +326,7 @@
         <div class="two-col">
           <div class="field">
             <label>Medical &amp; wellbeing</label>
-            <input type="number" id="c_medical" value="199.18" step="5" oninput="calc()">
+            <input type="number" id="c_medical" value="127.50" step="5" oninput="calc()">
             </div>
           <div class="field">
             <label>Clothing &amp; personal care</label>
@@ -336,21 +336,21 @@
         <div class="two-col">
           <div class="field">
             <label>Pets</label>
-            <input type="number" id="c_pets" value="56.07" step="5" oninput="calc()">
+            <input type="number" id="c_pets" value="80" step="5" oninput="calc()">
           </div>
           <div class="field">
             <label>Utilities &amp; connectivity</label>
-            <input type="number" id="c_utilities" value="40.06" step="5" oninput="calc()">
+            <input type="number" id="c_utilities" value="84" step="5" oninput="calc()">
           </div>
         </div>
         <div class="two-col">
           <div class="field">
             <label>Household &amp; shopping</label>
-            <input type="number" id="c_household" value="38.72" step="5" oninput="calc()">
+            <input type="number" id="c_household" value="20" step="5" oninput="calc()">
           </div>
           <div class="field">
             <label>Subscriptions &amp; digital</label>
-            <input type="number" id="c_subs" value="22.86" step="5" oninput="calc()">
+            <input type="number" id="c_subs" value="14" step="5" oninput="calc()">
           </div>
         </div>
         <div class="two-col">
@@ -365,18 +365,23 @@
         </div>
         <div class="two-col">
           <div class="field">
-            <label>Car rego &amp; govt</label>
-            <input type="number" id="c_rego" value="6.09" step="2" oninput="calc()">
+            <label>Car ownership &amp; maintenance</label>
+            <input type="number" id="c_carOwnership" value="68" step="5" oninput="calc()">
+            <div class="hint">Insurance, rego/CTP, servicing, tyres and repairs. Excludes petrol and tolls.</div>
           </div>
           <div class="field">
-            <label>Miscellaneous</label>
-            <input type="number" id="c_misc" value="29.54" step="5" oninput="calc()">
+            <label>Work &amp; creative</label>
+            <input type="number" id="c_workCreative" value="37" step="5" oninput="calc()">
           </div>
         </div>
         <div class="two-col">
           <div class="field">
             <label>Giving &amp; tithing</label>
             <input type="number" id="c_giving" value="20" step="5" oninput="calc()">
+          </div>
+          <div class="field">
+            <label>Miscellaneous</label>
+            <input type="number" id="c_misc" value="0" step="5" oninput="calc()">
           </div>
         </div>
       </div>
@@ -500,9 +505,9 @@ const DEFAULTS = {
   strata: 1525.07, council: 334.50, water: 172.79,
   distanceKm: 19, officeDays: 5, fuelEff: 10, petrolPrice: 2.08, tollsPerDay: 0,
   tollRebateType: 'none',
-  c_groceries: 388.27, c_dining: 1.34, c_medical: 199.18, c_clothing: 64.09,
-  c_pets: 56.07, c_utilities: 40.06, c_household: 38.72, c_subs: 22.86,
-  c_gifts: 17.63, c_memberships: 7.32, c_rego: 6.09, c_misc: 29.54, c_giving: 20
+  c_groceries: 280, c_dining: 1.34, c_medical: 127.50, c_clothing: 64.09,
+  c_pets: 80, c_utilities: 84, c_household: 20, c_subs: 14,
+  c_gifts: 17.63, c_memberships: 7.32, c_carOwnership: 68, c_workCreative: 37, c_misc: 0, c_giving: 20
 };
 
 function v(id) {
@@ -562,7 +567,7 @@ function calc() {
   const medical = v('c_medical');
   const food = v('c_groceries') + v('c_dining');
   const personal = v('c_clothing') + v('c_pets') + v('c_utilities') + v('c_household') +
-    v('c_subs') + v('c_gifts') + v('c_memberships') + v('c_rego') + v('c_misc') + v('c_giving');
+    v('c_subs') + v('c_gifts') + v('c_memberships') + v('c_carOwnership') + v('c_workCreative') + v('c_misc') + v('c_giving');
   const livingTotal = food + medical + personal;
 
   // Totals
@@ -640,7 +645,7 @@ function showTab(name) {
 }
 
 function resetLiving() {
-  const cats = ['groceries','dining','medical','clothing','pets','utilities','household','subs','gifts','memberships','rego','misc','giving'];
+  const cats = ['groceries','dining','medical','clothing','pets','utilities','household','subs','gifts','memberships','carOwnership','workCreative','misc','giving'];
   cats.forEach(c => {
     const el = document.getElementById('c_' + c);
     if (el) el.value = DEFAULTS['c_' + c];
