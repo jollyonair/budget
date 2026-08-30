@@ -100,6 +100,10 @@
   .field input::-webkit-inner-spin-button { -webkit-appearance: none; }
   .field input:focus, .field select:focus { border-color: var(--blue); background: #fff; }
   .field .hint { font-size: 11px; color: var(--text3); margin-top: 3px; }
+  .range-row { display: grid; grid-template-columns: 1fr 92px; gap: 10px; align-items: center; }
+  input[type="range"] { width: 100%; accent-color: var(--blue); }
+  .check-row { display: flex; gap: 8px; align-items: center; font-size: 12px; color: var(--text2); }
+  .result-callout { background: var(--blue-bg); color: var(--blue); border-radius: var(--radius); padding: 10px 12px; font-size: 12px; margin-top: 12px; }
 
   .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
   .three-col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
@@ -208,17 +212,13 @@
         <div class="card-title">Income</div>
         <div class="two-col">
           <div class="field">
-            <label>Chris net income (annual)</label>
-            <input type="number" id="chrisIncome" value="65352" step="500" oninput="calc()">
+            <label>Chris take-home income (annual)</label>
+            <input type="number" id="chrisIncome" value="70000" step="500" oninput="calc()">
           </div>
           <div class="field">
-            <label>Vanessa pension (annual)</label>
-            <input type="number" id="vanessaIncome" value="10833" step="100" oninput="calc()">
+            <label>Vanessa DSP income (annual)</label>
+            <input type="number" id="vanessaIncome" value="3848" step="100" oninput="calc()">
           </div>
-        </div>
-        <div class="toggle-row" style="margin-top:10px">
-          <label>Include toll rebate ($3,000/yr) <span style="font-size:11px;color:var(--text3)">— only if incurring tolls</span></label>
-          <label class="toggle"><input type="checkbox" id="tollRebate" onchange="calc()"><span class="toggle-slider"></span></label>
         </div>
       </div>
 
@@ -236,19 +236,17 @@
         </div>
         <div class="two-col">
           <div class="field">
-            <label>Govt equity share (%)</label>
-            <input type="number" id="govtEquity" value="30.05" step="0.01" oninput="calc()">
-            <div class="hint">Bank Australia shared equity scheme</div>
+            <label>Property type</label>
+            <select id="propertyType" onchange="setEquityLimit(); calc()"><option value="established">Established (up to 30%)</option><option value="newBuild">New build (up to 40%)</option></select>
           </div>
           <div class="field">
             <label>Interest rate (% p.a.)</label>
             <input type="number" id="interestRate" value="6.13" step="0.05" oninput="calc()">
           </div>
         </div>
-        <div class="field">
-          <label>Loan term (years)</label>
-          <input type="number" id="loanTerm" value="30" step="1" oninput="calc()">
-        </div>
+        <div class="two-col"><div class="field"><label>Government equity (%)</label><div class="range-row"><input type="range" id="govtEquityRange" min="0" max="30" step="0.01" value="30.05" oninput="syncEquity(this.value)"><input type="number" id="govtEquity" value="30.05" step="0.01" oninput="syncEquity(this.value)"></div><div class="hint" id="equityHint">Maximum depends on property type</div></div><div class="field"><label>Loan term (years)</label><input type="number" id="loanTerm" value="30" step="1" min="1" oninput="calc()"></div></div>
+        <div class="field"><label>Loan amount</label><input type="number" id="loanAmount" value="265560" step="5000" oninput="calc()"><label class="check-row"><input type="checkbox" id="manualLoan" onchange="calc()"> Enter loan amount directly (otherwise calculated from price, deposit and equity)</label></div>
+        <div class="divider"></div><div class="two-col"><div class="field"><label>Housing target (% of income)</label><input type="number" id="housingTarget" value="35" min="1" max="100" step="1" oninput="calc()"></div><div class="field"><label>Calculate maximum price</label><label class="toggle"><input type="checkbox" id="showMaxPrice" onchange="calc()"><span class="toggle-slider"></span></label></div></div><div class="result-callout" id="maxPriceResult">Turn on maximum price to see the purchase price supported at your housing target.</div>
       </div>
 
       <div class="card">
@@ -297,28 +295,14 @@
             <div class="hint">~$1.92 now, est. ~$2.08 post-3 Aug excise</div>
           </div>
         </div>
-        <div class="field">
-          <label>Tolls per office day ($)</label>
-          <input type="number" id="tollsPerDay" value="0" step="1" oninput="calc()">
-          <div class="hint">Ermington = $0. Eastern suburbs = ~$25/day</div>
-        </div>
       </div>
 
       <div class="card">
-        <div class="card-title">Work scenarios</div>
+        <div class="card-title">Tolls and rebates</div>
         <div class="field">
-          <label>Pay rise (gross per year, $)</label>
-          <input type="number" id="payRise" value="0" step="1000" oninput="calc()">
-          <div class="hint">Net added to income at ~67.5c in the dollar (marginal tax estimate)</div>
+          <label>NSW toll relief</label><select id="tollRebateType" onchange="calc()"><option value="none">No rebate</option><option value="weeklyCap">NSW $50 weekly cap (eligible personal trips)</option><option value="m5Cashback">M5 South-West Cashback</option></select><div class="hint">Choose one. The cap covers eligible M4/M7 trips; M5 Cashback is separate.</div>
         </div>
-        <div class="toggle-row" style="margin-top:6px">
-          <label>Full remote working <span class="scenario-badge badge-remote">saves petrol</span></label>
-          <label class="toggle"><input type="checkbox" id="fullRemote" onchange="calc()"><span class="toggle-slider"></span></label>
-        </div>
-        <div class="toggle-row">
-          <label>Physio fortnightly <span class="scenario-badge badge-physio">saves $72.50/wk</span></label>
-          <label class="toggle"><input type="checkbox" id="physioFortnight" onchange="calc()"><span class="toggle-slider"></span></label>
-        </div>
+        <div class="field"><label>Tolls per office day ($)</label><input type="number" id="tollsPerDay" value="0" min="0" step="1" oninput="calc()"><div class="hint">Enter the actual M4/M7/etc. trip cost for your route. Check current rates before relying on it.</div></div>
       </div>
 
     </div>
@@ -510,12 +494,12 @@
 
 <script>
 const DEFAULTS = {
-  chrisIncome: 65352, vanessaIncome: 10833, tollRebate: false,
-  purchasePrice: 880000, deposit: 350000, govtEquity: 30.05,
+  chrisIncome: 70000, vanessaIncome: 3848,
+  purchasePrice: 880000, deposit: 350000, govtEquity: 30, propertyType: 'established', loanAmount: 266000, manualLoan: false,
   interestRate: 6.13, loanTerm: 30,
   strata: 1525.07, council: 334.50, water: 172.79,
   distanceKm: 19, officeDays: 5, fuelEff: 10, petrolPrice: 2.08, tollsPerDay: 0,
-  payRise: 0, fullRemote: false, physioFortnight: false,
+  tollRebateType: 'none',
   c_groceries: 388.27, c_dining: 1.34, c_medical: 199.18, c_clothing: 64.09,
   c_pets: 56.07, c_utilities: 40.06, c_household: 38.72, c_subs: 22.86,
   c_gifts: 17.63, c_memberships: 7.32, c_rego: 6.09, c_misc: 29.54, c_giving: 20
@@ -525,6 +509,7 @@ function v(id) {
   const el = document.getElementById(id);
   if (!el) return 0;
   if (el.type === 'checkbox') return el.checked;
+  if (el.tagName === 'SELECT') return el.value;
   return parseFloat(el.value) || 0;
 }
 
@@ -532,22 +517,26 @@ function fmt(n) { return '$' + Math.round(Math.abs(n)).toLocaleString(); }
 function fmtd(n) { return (n < 0 ? '-$' : '$') + Math.round(Math.abs(n)).toLocaleString(); }
 function pct(n, total) { return total > 0 ? (n / total * 100).toFixed(1) + '%' : '0%'; }
 function pctNum(n, total) { return total > 0 ? n / total * 100 : 0; }
+function equityMaximum() { return v('propertyType') === 'newBuild' ? 40 : 30; }
+function setEquityLimit() { const max = equityMaximum(), range = document.getElementById('govtEquityRange'), input = document.getElementById('govtEquity'); range.max = max; const value = Math.min(parseFloat(input.value) || 0, max); range.value = value; input.value = value; document.getElementById('equityHint').textContent = 'Maximum: ' + max + '% for this property type'; }
+function syncEquity(value) { const safe = Math.max(0, Math.min(parseFloat(value) || 0, equityMaximum())); document.getElementById('govtEquity').value = safe; document.getElementById('govtEquityRange').value = safe; calc(); }
 
 function calc() {
   // Income
   const chrisNet = v('chrisIncome');
   const vanessa = v('vanessaIncome');
-  const tollRebate = v('tollRebate') ? 3000 : 0;
-  const payRise = v('payRise') * 0.675;
-  const annualIncome = chrisNet + vanessa + tollRebate + payRise;
+  const annualIncome = chrisNet + vanessa;
   const weeklyIncome = annualIncome / 52;
 
   // Mortgage
   const price = v('purchasePrice');
   const deposit = v('deposit');
-  const govtPct = v('govtEquity') / 100;
+  const govtPct = Math.min(v('govtEquity'), equityMaximum()) / 100;
   const govtShare = price * govtPct;
-  const loan = Math.max(0, price - deposit - govtShare);
+  const calculatedLoan = Math.max(0, price - deposit - govtShare);
+  const manualLoan = document.getElementById('manualLoan').checked;
+  const loan = manualLoan ? Math.max(0, v('loanAmount')) : calculatedLoan;
+  if (!manualLoan) document.getElementById('loanAmount').value = Math.round(calculatedLoan);
   const rate = v('interestRate') / 100 / 12;
   const months = v('loanTerm') * 12;
   let monthlyMort = 0;
@@ -560,17 +549,17 @@ function calc() {
   const outgoingsWeekly = (v('strata') + v('council') + v('water')) * 4 / 52;
 
   // Transport
-  const remote = v('fullRemote');
-  const days = remote ? 0 : v('officeDays');
+  const days = v('officeDays');
   const dist = v('distanceKm');
   const litresPerDay = (dist * 2 / 100) * v('fuelEff');
   const petrolWeekly = litresPerDay * v('petrolPrice') * days;
   const tollsWeekly = v('tollsPerDay') * days;
-  const transportWeekly = petrolWeekly + tollsWeekly;
+  const rebateType = document.getElementById('tollRebateType').value;
+  const tollRebateWeekly = rebateType === 'm5Cashback' ? tollsWeekly : rebateType === 'weeklyCap' && tollsWeekly >= 50 ? Math.min(tollsWeekly - 50, 350, 5000 / 52) : 0;
+  const transportWeekly = petrolWeekly + Math.max(0, tollsWeekly - tollRebateWeekly);
 
   // Living costs
-  const physioAdj = v('physioFortnight') ? -72.5 : 0;
-  const medical = v('c_medical') + physioAdj;
+  const medical = v('c_medical');
   const food = v('c_groceries') + v('c_dining');
   const personal = v('c_clothing') + v('c_pets') + v('c_utilities') + v('c_household') +
     v('c_subs') + v('c_gifts') + v('c_memberships') + v('c_rego') + v('c_misc') + v('c_giving');
@@ -581,6 +570,8 @@ function calc() {
   const totalSpend = housingTotal + transportWeekly + livingTotal;
   const surplus = weeklyIncome - totalSpend;
   const surplusMonthly = surplus * 52 / 12;
+  const maxEl = document.getElementById('maxPriceResult');
+  if (document.getElementById('showMaxPrice').checked) { const targetWeeklyMortgage = weeklyIncome * v('housingTarget') / 100 - outgoingsWeekly; const targetMonthlyMortgage = targetWeeklyMortgage * 52 / 12; const pv = rate > 0 && targetMonthlyMortgage > 0 ? targetMonthlyMortgage * (1 - Math.pow(1 + rate, -months)) / rate : 0; const maxPrice = pv > 0 ? (pv + deposit) / (1 - govtPct) : 0; maxEl.textContent = maxPrice > 0 ? 'Estimated maximum purchase price: ' + fmtd(maxPrice) + ' at ' + v('housingTarget') + '% housing costs' : 'The target leaves no room for mortgage repayments after property outgoings.'; } else maxEl.textContent = 'Turn on maximum price to see the purchase price supported at your housing target.';
 
   // Update surplus display
   const sd = document.getElementById('surplusDisplay');
@@ -657,6 +648,7 @@ function resetLiving() {
   calc();
 }
 
+setEquityLimit();
 calc();
 </script>
 </body>
