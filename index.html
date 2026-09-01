@@ -300,7 +300,7 @@
       <div class="card">
         <div class="card-title">Tolls and rebates</div>
         <div class="field">
-          <label>NSW toll relief</label><select id="tollRebateType" onchange="calc()"><option value="none">No rebate</option><option value="weeklyCap">NSW $50 weekly cap (eligible personal trips)</option><option value="m5Cashback">M5 South-West Cashback</option></select><div class="hint">Choose one. The cap covers eligible M4/M7 trips; M5 Cashback is separate.</div>
+          <label>NSW toll relief</label><select id="tollRebateType" onchange="calc()"><option value="none">No rebate</option><option value="weeklyCap">NSW $60 weekly cap (budgeting assumption)</option><option value="m5Cashback">M5 South-West Cashback</option></select><div class="hint">Choose one. We budget at the planned $60 cap; the cap covers eligible M4/M7 trips, while M5 Cashback is separate.</div>
         </div>
         <div class="field"><label>Tolls per office day ($)</label><input type="number" id="tollsPerDay" value="0" min="0" step="1" oninput="calc()"><div class="hint">Enter the actual M4/M7/etc. trip cost for your route. Check current rates before relying on it.</div></div>
       </div>
@@ -560,7 +560,7 @@ function calc() {
   const petrolWeekly = litresPerDay * v('petrolPrice') * days;
   const tollsWeekly = v('tollsPerDay') * days;
   const rebateType = document.getElementById('tollRebateType').value;
-  const tollRebateWeekly = rebateType === 'm5Cashback' ? tollsWeekly : rebateType === 'weeklyCap' && tollsWeekly >= 50 ? Math.min(tollsWeekly - 50, 350, 5000 / 52) : 0;
+  const tollRebateWeekly = rebateType === 'm5Cashback' ? tollsWeekly : rebateType === 'weeklyCap' && tollsWeekly >= 60 ? Math.min(tollsWeekly - 60, 350, 5000 / 52) : 0;
   const transportWeekly = petrolWeekly + Math.max(0, tollsWeekly - tollRebateWeekly);
 
   // Living costs
