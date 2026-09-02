@@ -403,6 +403,16 @@
       </div>
 
       <div class="breakdown-card">
+        <div class="breakdown-title">Mortgage, property costs + tolls</div>
+        <div class="brow"><span class="brow-label">Mortgage</span><span class="brow-amount" id="r_summary_mortgage">$0</span></div>
+        <div class="brow"><span class="brow-label">Strata + council rates</span><span class="brow-amount" id="r_summary_rates">$0</span></div>
+        <div class="brow"><span class="brow-label">Water</span><span class="brow-amount" id="r_summary_water">$0</span></div>
+        <div class="brow"><span class="brow-label">Tolls after rebate</span><span class="brow-amount" id="r_summary_tolls">$0</span></div>
+        <div class="total-row"><span>Total per week</span><span id="r_summary_total">$0</span></div>
+        <div class="brow-pct" style="width:100%; margin-top:6px" id="r_summary_pct">0% of weekly income</div>
+      </div>
+
+      <div class="breakdown-card">
         <div class="breakdown-title">Weekly breakdown</div>
 
         <div class="brow">
@@ -551,7 +561,10 @@ function calc() {
   const weeklyMort = monthlyMort * 12 / 52;
 
   // Outgoings
-  const outgoingsWeekly = (v('strata') + v('council') + v('water')) * 4 / 52;
+  const strataWeekly = v('strata') * 4 / 52;
+  const ratesWeekly = v('council') * 4 / 52;
+  const waterWeekly = v('water') * 4 / 52;
+  const outgoingsWeekly = strataWeekly + ratesWeekly + waterWeekly;
 
   // Transport
   const days = v('officeDays');
@@ -562,6 +575,7 @@ function calc() {
   const rebateType = document.getElementById('tollRebateType').value;
   const tollRebateWeekly = rebateType === 'm5Cashback' ? tollsWeekly : rebateType === 'weeklyCap' && tollsWeekly >= 60 ? Math.min(tollsWeekly - 60, 350, 5000 / 52) : 0;
   const transportWeekly = petrolWeekly + Math.max(0, tollsWeekly - tollRebateWeekly);
+  const netTollsWeekly = Math.max(0, tollsWeekly - tollRebateWeekly);
 
   // Living costs
   const medical = v('c_medical');
@@ -575,6 +589,7 @@ function calc() {
   const totalSpend = housingTotal + transportWeekly + livingTotal;
   const surplus = weeklyIncome - totalSpend;
   const surplusMonthly = surplus * 52 / 12;
+  const summaryTotal = weeklyMort + outgoingsWeekly + netTollsWeekly;
   const maxEl = document.getElementById('maxPriceResult');
   if (document.getElementById('showMaxPrice').checked) { const targetWeeklyMortgage = weeklyIncome * v('housingTarget') / 100 - outgoingsWeekly; const targetMonthlyMortgage = targetWeeklyMortgage * 52 / 12; const pv = rate > 0 && targetMonthlyMortgage > 0 ? targetMonthlyMortgage * (1 - Math.pow(1 + rate, -months)) / rate : 0; const maxPrice = pv > 0 ? (pv + deposit) / (1 - govtPct) : 0; maxEl.textContent = maxPrice > 0 ? 'Estimated maximum purchase price: ' + fmtd(maxPrice) + ' at ' + v('housingTarget') + '% housing costs' : 'The target leaves no room for mortgage repayments after property outgoings.'; } else maxEl.textContent = 'Turn on maximum price to see the purchase price supported at your housing target.';
 
@@ -590,6 +605,13 @@ function calc() {
     const el = document.getElementById(id);
     if (el) el.style.width = Math.min(pctVal, 100) + '%';
   };
+
+  set('r_summary_mortgage', fmt(weeklyMort));
+  set('r_summary_rates', fmt(strataWeekly + ratesWeekly));
+  set('r_summary_water', fmt(waterWeekly));
+  set('r_summary_tolls', fmt(netTollsWeekly));
+  set('r_summary_total', fmt(summaryTotal));
+  set('r_summary_pct', pct(summaryTotal, weeklyIncome) + ' of weekly income');
 
   set('r_income', fmt(weeklyIncome));
   set('r_income_pct', '100%');
