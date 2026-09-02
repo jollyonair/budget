@@ -425,25 +425,7 @@
 
         <div class="brow">
           <div style="flex:1">
-            <div class="brow-label">Mortgage</div>
-            <div class="pct-bar"><div class="pct-bar-fill" id="bar_mortgage" style="background:#2a78d6"></div></div>
-          </div>
-          <div class="brow-amount" id="r_mortgage">$0</div>
-          <div class="brow-pct" id="r_mortgage_pct">0%</div>
-        </div>
-
-        <div class="brow">
-          <div style="flex:1">
-            <div class="brow-label">Strata + rates</div>
-            <div class="pct-bar"><div class="pct-bar-fill" id="bar_outgoings" style="background:#85B7EB"></div></div>
-          </div>
-          <div class="brow-amount" id="r_outgoings">$0</div>
-          <div class="brow-pct" id="r_outgoings_pct">0%</div>
-        </div>
-
-        <div class="brow">
-          <div style="flex:1">
-            <div class="brow-label">Transport</div>
+            <div class="brow-label">Petrol</div>
             <div class="pct-bar"><div class="pct-bar-fill" id="bar_transport" style="background:#1D9E75"></div></div>
           </div>
           <div class="brow-amount" id="r_transport">$0</div>
@@ -477,10 +459,8 @@
           <div class="brow-pct" id="r_personal_pct">0%</div>
         </div>
 
-        <div class="total-row">
-          <span>Total spending</span>
-          <span id="r_total">$0</span>
-        </div>
+        <div class="total-row"><span>Subtotal excluding property costs + tolls</span><span id="r_breakdown_total">$0</span></div>
+        <div class="total-row"><span>Total spending</span><span id="r_total">$0</span></div>
       </div>
 
       <div class="breakdown-card">
@@ -590,6 +570,7 @@ function calc() {
   const surplus = weeklyIncome - totalSpend;
   const surplusMonthly = surplus * 52 / 12;
   const summaryTotal = weeklyMort + outgoingsWeekly + netTollsWeekly;
+  const breakdownTotal = petrolWeekly + livingTotal;
   const maxEl = document.getElementById('maxPriceResult');
   if (document.getElementById('showMaxPrice').checked) { const targetWeeklyMortgage = weeklyIncome * v('housingTarget') / 100 - outgoingsWeekly; const targetMonthlyMortgage = targetWeeklyMortgage * 52 / 12; const pv = rate > 0 && targetMonthlyMortgage > 0 ? targetMonthlyMortgage * (1 - Math.pow(1 + rate, -months)) / rate : 0; const maxPrice = pv > 0 ? (pv + deposit) / (1 - govtPct) : 0; maxEl.textContent = maxPrice > 0 ? 'Estimated maximum purchase price: ' + fmtd(maxPrice) + ' at ' + v('housingTarget') + '% housing costs' : 'The target leaves no room for mortgage repayments after property outgoings.'; } else maxEl.textContent = 'Turn on maximum price to see the purchase price supported at your housing target.';
 
@@ -616,17 +597,9 @@ function calc() {
   set('r_income', fmt(weeklyIncome));
   set('r_income_pct', '100%');
 
-  set('r_mortgage', fmt(weeklyMort));
-  set('r_mortgage_pct', pct(weeklyMort, weeklyIncome));
-  setBar('bar_mortgage', pctNum(weeklyMort, weeklyIncome));
-
-  set('r_outgoings', fmt(outgoingsWeekly));
-  set('r_outgoings_pct', pct(outgoingsWeekly, weeklyIncome));
-  setBar('bar_outgoings', pctNum(outgoingsWeekly, weeklyIncome));
-
-  set('r_transport', fmt(transportWeekly));
-  set('r_transport_pct', pct(transportWeekly, weeklyIncome));
-  setBar('bar_transport', pctNum(transportWeekly, weeklyIncome));
+  set('r_transport', fmt(petrolWeekly));
+  set('r_transport_pct', pct(petrolWeekly, weeklyIncome));
+  setBar('bar_transport', pctNum(petrolWeekly, weeklyIncome));
 
   set('r_food', fmt(food));
   set('r_food_pct', pct(food, weeklyIncome));
@@ -645,6 +618,7 @@ function calc() {
   set('r_personal_pct', pct(personal, weeklyIncome));
   setBar('bar_personal', pctNum(personal, weeklyIncome));
 
+  set('r_breakdown_total', fmt(breakdownTotal));
   set('r_total', fmt(totalSpend));
 
   // Loan details
