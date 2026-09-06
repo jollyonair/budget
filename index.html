@@ -110,6 +110,8 @@
   .category-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
   .category-card { border: 0.5px solid var(--border); border-radius: var(--radius); padding: 9px 10px; background: var(--surface2); }
   .category-over { border-color: var(--red); background: var(--red-bg); }
+  .summary-good { background: var(--green-bg); color: var(--green); border-color: var(--green); font-weight: 600; }
+  .summary-over { background: var(--red-bg); color: var(--red); border-color: var(--red); font-weight: 700; }
   .category-name { font-size: 12px; font-weight: 600; }
   .category-values { display: flex; justify-content: space-between; gap: 8px; margin-top: 3px; font-size: 11px; color: var(--text2); }
   .category-values strong { color: var(--text); }
@@ -240,10 +242,9 @@
           <div class="card-title">Budget allocation</div>
           <div class="pie-chart" id="pieChart" aria-label="Budget allocation overview"></div>
           <div class="pie-legend" id="pieLegend"></div>
-          <div class="hint" style="text-align:center">Detailed category comparisons are below. Edit assumptions in the tabs.</div>
         </div>
       </div>
-      <div class="card" style="margin-top:14px"><div class="card-title">Target versus actual weekly budget</div><div class="category-grid" id="dashboardCategories"></div></div>
+      <div class="card" style="margin-top:14px"><div class="card-title">Target versus actual budget</div><div class="category-grid" id="dashboardCategories"></div></div>
     </div>
 
     <!-- TAB 1: Housing details -->
@@ -560,7 +561,7 @@ function renderDashboard(data, weeklyIncome) {
   const pie = document.getElementById('pieChart');
   if (pie) pie.style.background = 'conic-gradient(' + segments.map(item => item.segment).join(', ') + ')';
   const legend = document.getElementById('pieLegend');
-  if (legend) legend.innerHTML = segments.map(item => '<div class="legend-item"><span class="legend-swatch" style="background:' + item.color + '"></span><span>' + item.name + ' ' + pct(item.actual, total) + '</span></div>').join('');
+  if (legend) legend.innerHTML = segments.map(item => '<div class="legend-item"><span class="legend-swatch" style="background:' + item.color + '"></span><span>' + item.name + ' ' + pct(item.actual, weeklyIncome) + ' (target ' + ((CATEGORY_TARGETS[item.name] || 0) * 100).toFixed(0) + '%)</span></div>').join('');
   target.innerHTML = Object.entries(data).map(([name, actual]) => {
     const targetPct = CATEGORY_TARGETS[name] || 0;
     const targetAmount = weeklyIncome * targetPct;
@@ -636,9 +637,9 @@ function calc() {
   const incomeDashboard = document.getElementById('incomeDashboard');
   if (incomeDashboard) incomeDashboard.textContent = fmt(weeklyIncome);
   const housingDashboard = document.getElementById('housingDashboard');
-  if (housingDashboard) housingDashboard.textContent = fmt(housingTotal) + ' (target ' + fmt(weeklyIncome * v('housingTarget') / 100) + ')';
+  if (housingDashboard) { const housingTargetAmount = weeklyIncome * v('housingTarget') / 100; housingDashboard.textContent = fmt(housingTotal) + ' (target ' + fmt(housingTargetAmount) + ')'; housingDashboard.className = 'result-callout ' + (housingTotal > housingTargetAmount ? 'summary-over' : 'summary-good'); }
   const transportDashboard = document.getElementById('transportDashboard');
-  if (transportDashboard) transportDashboard.textContent = fmt(transportActual) + ' (target ' + fmt(weeklyIncome * CATEGORY_TARGETS.Transport) + ')';
+  if (transportDashboard) { const transportTargetAmount = weeklyIncome * CATEGORY_TARGETS.Transport; transportDashboard.textContent = fmt(transportActual) + ' (target ' + fmt(transportTargetAmount) + ')'; transportDashboard.className = 'result-callout ' + (transportActual > transportTargetAmount ? 'summary-over' : 'summary-good'); }
   const maxEl = document.getElementById('maxPriceResult');
   if (document.getElementById('showMaxPrice').checked) { const targetWeeklyMortgage = weeklyIncome * v('housingTarget') / 100 - outgoingsWeekly; const targetMonthlyMortgage = targetWeeklyMortgage * 52 / 12; const pv = rate > 0 && targetMonthlyMortgage > 0 ? targetMonthlyMortgage * (1 - Math.pow(1 + rate, -months)) / rate : 0; const maxPrice = pv > 0 ? (pv + deposit) / (1 - govtPct) : 0; maxEl.textContent = maxPrice > 0 ? 'Estimated maximum purchase price: ' + fmtd(maxPrice) + ' at ' + v('housingTarget') + '% housing costs' : 'The target leaves no room for mortgage repayments after property outgoings.'; } else maxEl.textContent = 'Turn on maximum price to see the purchase price supported at your housing target.';
 
