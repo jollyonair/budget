@@ -107,21 +107,21 @@
   .dashboard-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
   .dashboard-grid .card { margin-bottom: 0; }
   .dashboard-grid .card:last-child { grid-column: 1 / -1; }
-  .category-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+  .category-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
   .category-card { border: 0.5px solid var(--border); border-radius: var(--radius); padding: 9px 10px; background: var(--surface2); }
   .category-name { font-size: 12px; font-weight: 600; }
   .category-values { display: flex; justify-content: space-between; gap: 8px; margin-top: 3px; font-size: 11px; color: var(--text2); }
   .category-values strong { color: var(--text); }
   .category-bar { height: 4px; margin-top: 7px; background: var(--bg); border-radius: 3px; overflow: hidden; }
   .category-bar-fill { height: 100%; background: var(--blue); border-radius: 3px; }
-  .pie-chart { width: 250px; height: 250px; border-radius: 50%; margin: 4px auto 14px; background: conic-gradient(var(--blue) 0 25%, #1D9E75 25% 45%, #EF9F27 45% 65%, #E24B4A 65% 80%, #7F77DD 80% 100%); position: relative; }
-  .pie-chart::after { content: ''; position: absolute; inset: 54px; border-radius: 50%; background: var(--surface); }
-  .pie-legend { display: grid; grid-template-columns: 1fr 1fr; gap: 5px 12px; font-size: 11px; color: var(--text2); }
+  .pie-chart { width: 300px; height: 300px; border-radius: 50%; margin: 4px auto 18px; background: conic-gradient(var(--blue) 0 25%, #1D9E75 25% 45%, #EF9F27 45% 65%, #E24B4A 65% 80%, #7F77DD 80% 100%); position: relative; }
+  .pie-chart::after { content: ''; position: absolute; inset: 64px; border-radius: 50%; background: var(--surface); }
+  .pie-legend { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px 12px; font-size: 11px; color: var(--text2); }
   .legend-item { display: flex; align-items: center; gap: 5px; min-width: 0; }
   .legend-swatch { width: 8px; height: 8px; border-radius: 2px; flex-shrink: 0; }
   .status-good { color: var(--green); }
   .status-bad { color: var(--red); }
-  @media (max-width: 760px) { .dashboard-grid, .category-grid { grid-template-columns: 1fr; } .dashboard-grid .card:last-child { grid-column: auto; } }
+  @media (max-width: 760px) { .dashboard-grid, .category-grid, .pie-legend { grid-template-columns: 1fr; } .dashboard-grid .card:last-child { grid-column: auto; } .pie-chart { width: 240px; height: 240px; } .pie-chart::after { inset: 52px; } }
 
   .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
   .three-col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
@@ -260,7 +260,7 @@
           <div class="field"><label>Purchase price ($)</label><input type="number" id="purchasePrice" value="880000" step="5000" oninput="calc()"></div>
           <div class="field">
             <label>Deposit ($)</label>
-            <input type="number" id="deposit" value="300000" step="5000" oninput="calc()">
+            <input type="number" id="deposit" value="312000" step="5000" oninput="calc()">
           </div>
         </div>
         <div class="three-col"><div class="field"><label>Strata/qtr ($)</label><input type="number" id="strata" value="1525.07" step="10" oninput="calc()"></div><div class="field"><label>Council/qtr ($)</label><input type="number" id="council" value="334.50" step="5" oninput="calc()"></div><div class="field"><label>Water/qtr ($)</label><input type="number" id="water" value="172.79" step="5" oninput="calc()"></div></div>
@@ -280,7 +280,7 @@
           </div>
         </div>
         <div class="two-col"><div class="field"><label>Government equity (%)</label><div class="range-row"><input type="range" id="govtEquityRange" min="0" max="30" step="0.01" value="30.05" oninput="syncEquity(this.value)"><input type="number" id="govtEquity" value="30.05" step="0.01" oninput="syncEquity(this.value)"></div><div class="hint" id="equityHint">Maximum depends on property type</div></div><div class="field"><label>Loan term (years)</label><input type="number" id="loanTerm" value="30" step="1" min="1" oninput="calc()"></div></div>
-        <div class="field"><label>Loan amount</label><input type="number" id="loanAmount" value="316000" step="5000" oninput="calc()"><label class="check-row"><input type="checkbox" id="manualLoan" onchange="calc()"> Enter loan amount directly (otherwise calculated from price, deposit and equity)</label></div>
+        <div class="field"><label>Loan amount</label><input type="number" id="loanAmount" value="304000" step="5000" oninput="calc()"><label class="check-row"><input type="checkbox" id="manualLoan" onchange="calc()"> Enter loan amount directly (otherwise calculated from price, deposit and equity)</label><div class="hint" id="loanLimitHint">Maximum loan: $304,000</div></div>
         <div class="divider"></div><div class="two-col"><div class="field"><label>Calculate maximum price</label><label class="toggle"><input type="checkbox" id="showMaxPrice" onchange="calc()"><span class="toggle-slider"></span></label></div><div class="field"><div class="result-callout" id="maxPriceResult">Turn on maximum price to see the purchase price supported at your housing target.</div></div></div>
       </div>
 
@@ -504,7 +504,7 @@
 <script>
 const DEFAULTS = {
   incomeAmount: 73848, incomePeriod: 'yearly', savingsWeekly: 0,
-  purchasePrice: 880000, deposit: 300000, govtEquity: 30, propertyType: 'established', loanAmount: 316000, manualLoan: false,
+  purchasePrice: 880000, deposit: 312000, govtEquity: 30, propertyType: 'established', loanAmount: 304000, manualLoan: false,
   interestRate: 6.13, loanTerm: 30,
   strata: 1525.07, council: 334.50, water: 172.79,
   distanceKm: 40, weeklyTolls: 60, officeDays: 5, fuelEff: 10, petrolPrice: 2.08,
@@ -512,6 +512,8 @@ const DEFAULTS = {
   c_pets: 80, c_utilities: 84, c_household: 20, c_subs: 14,
   c_gifts: 17.63, c_memberships: 7.32, c_carOwnership: 68, c_workCreative: 25, c_it: 12, c_misc: 0, c_giving: 20
 };
+
+const MAX_LOAN = 304000;
 
 const CATEGORY_TARGETS = {
   Housing: 0.35, Transport: 0.15, 'Groceries & household': 0.10, Medical: 0.05,
@@ -566,7 +568,7 @@ function renderDashboard(data, weeklyIncome) {
     const delta = actual - targetAmount;
     const isSavings = name === 'Savings';
     const favourable = isSavings ? delta >= 0 : delta <= 0;
-    return '<div class="category-card"><div class="category-name">' + name + '</div><div class="category-values"><span>Actual <strong>' + fmt(actual) + '</strong> (' + actualPct.toFixed(1) + '%)</span><span>Target ' + fmt(targetAmount) + ' (' + (targetPct * 100).toFixed(0) + '%)</span></div><div class="category-bar"><div class="category-bar-fill" style="width:' + width + '%"></div></div><div class="hint ' + (favourable ? 'status-good' : 'status-bad') + '">' + (delta >= 0 ? '+' : '') + fmtd(delta) + ' versus target</div></div>';
+    return '<div class="category-card"><div class="category-name">' + name + '</div><div class="category-values"><span>Actual <strong>' + fmt(actual) + '</strong> (' + actualPct.toFixed(1) + '%; target ' + (targetPct * 100).toFixed(0) + '%)</span><span>Target ' + fmt(targetAmount) + '</span></div><div class="category-bar"><div class="category-bar-fill" style="width:' + width + '%"></div></div><div class="hint ' + (favourable ? 'status-good' : 'status-bad') + '">' + (delta >= 0 ? '+' : '') + fmtd(delta) + ' versus target</div></div>';
   }).join('');
 }
 
@@ -582,9 +584,13 @@ function calc() {
   const govtPct = Math.min(v('govtEquity'), equityMaximum()) / 100;
   const govtShare = price * govtPct;
   const calculatedLoan = Math.max(0, price - deposit - govtShare);
+  const requiredDeposit = Math.max(0, price - govtShare - MAX_LOAN);
   const manualLoan = document.getElementById('manualLoan').checked;
-  const loan = manualLoan ? Math.max(0, v('loanAmount')) : calculatedLoan;
-  if (!manualLoan) document.getElementById('loanAmount').value = Math.round(calculatedLoan);
+  const loan = manualLoan ? Math.min(Math.max(0, v('loanAmount')), MAX_LOAN) : Math.min(calculatedLoan, MAX_LOAN);
+  if (!manualLoan) document.getElementById('loanAmount').value = Math.round(loan);
+  if (manualLoan && v('loanAmount') > MAX_LOAN) document.getElementById('loanAmount').value = MAX_LOAN;
+  const loanLimitHint = document.getElementById('loanLimitHint');
+  if (loanLimitHint) loanLimitHint.textContent = deposit < requiredDeposit ? 'Maximum loan: $304,000. Minimum deposit for this price/equity: ' + fmt(requiredDeposit) : 'Maximum loan: $304,000. Required deposit at the cap: ' + fmt(requiredDeposit);
   const rate = v('interestRate') / 100 / 12;
   const months = v('loanTerm') * 12;
   let monthlyMort = 0;
