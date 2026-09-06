@@ -372,15 +372,12 @@
             <input type="number" id="c_gifts" value="17.63" step="5" oninput="calc()">
           </div>
           <div class="field">
-            <label>Work/Education memberships</label>
-            <input type="number" id="c_memberships" value="7.32" step="2" oninput="calc()">
+            <label>Work/Education</label>
+            <input type="number" id="c_workCreative" value="32.32" step="5" oninput="calc()">
+            <div class="hint">Includes work tools and memberships.</div>
           </div>
         </div>
         <div class="two-col">
-          <div class="field">
-            <label>Work/Education</label>
-            <input type="number" id="c_workCreative" value="25" step="5" oninput="calc()">
-          </div>
           <div class="field">
             <label>IT</label>
             <input type="number" id="c_it" value="12" step="5" oninput="calc()">
@@ -504,7 +501,7 @@ const DEFAULTS = {
   distanceKm: 40, weeklyTolls: 60, officeDays: 5, fuelEff: 10, petrolPrice: 2.08,
   c_groceries: 280, c_dining: 1.34, c_medical: 127.50, c_clothing: 64.09,
   c_pets: 80, c_utilities: 84, c_household: 20, c_subs: 14,
-  c_gifts: 17.63, c_memberships: 7.32, c_carOwnership: 68, c_workCreative: 25, c_it: 12, c_giving: 20
+  c_gifts: 17.63, c_carOwnership: 68, c_workCreative: 32.32, c_it: 12, c_giving: 20
 };
 
 const MAX_LOAN = 304000;
@@ -612,7 +609,7 @@ function calc() {
   const medical = v('c_medical');
   const food = v('c_groceries') + v('c_dining');
   const personal = v('c_clothing') + v('c_pets') + v('c_utilities') + v('c_household') +
-    v('c_subs') + v('c_gifts') + v('c_memberships') + v('c_carOwnership') + v('c_workCreative') + v('c_it') + v('c_giving');
+    v('c_subs') + v('c_gifts') + v('c_carOwnership') + v('c_workCreative') + v('c_it') + v('c_giving');
   const livingTotal = food + medical + personal;
 
   // Totals
@@ -664,8 +661,8 @@ function calc() {
     'Care & clothing': v('c_clothing'),
     'Gifts & family': v('c_gifts'),
     Donations: v('c_giving'),
-    Entertainment: v('c_subs') + v('c_memberships'),
-    'Work/Education': v('c_workCreative') + v('c_memberships'),
+    Entertainment: v('c_subs'),
+    'Work/Education': v('c_workCreative'),
     IT: v('c_it'),
     Savings: v('savingsWeekly')
   }, weeklyIncome);
@@ -717,7 +714,7 @@ function showTab(name) {
 }
 
 function resetLiving() {
-  const cats = ['groceries','dining','medical','clothing','pets','utilities','household','subs','gifts','memberships','carOwnership','workCreative','it','giving'];
+  const cats = ['groceries','dining','medical','clothing','pets','utilities','household','subs','gifts','carOwnership','workCreative','it','giving'];
   cats.forEach(c => {
     const el = document.getElementById('c_' + c);
     if (el) el.value = DEFAULTS['c_' + c];
