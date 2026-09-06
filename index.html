@@ -226,14 +226,14 @@
 
     <div id="tab-dashboard" class="tab-panel active">
       <div class="dashboard-grid">
-        <div class="card"><div class="card-title">Income</div><div class="result-callout" id="incomeDashboard">$0/week net</div></div>
+        <div class="card"><div class="card-title">Income</div><div class="result-callout" id="incomeDashboard">$0 (100%)</div></div>
         <div class="card">
           <div class="card-title">Housing</div>
-          <div class="result-callout" id="housingDashboard">$0/week</div><div class="hint" id="housingTargetHint">Target: $0/week</div>
+          <div class="result-callout" id="housingDashboard">$0 (35% target)</div>
         </div>
         <div class="card">
           <div class="card-title">Transport</div>
-          <div class="result-callout" id="transportDashboard">$0/week</div><div class="hint" id="fixedTransportSummary">Fixed car costs: $68/week</div><div class="hint" id="transportTargetSummary">Target: $0/week (15%)<br>Actual: $0/week (0%)</div>
+          <div class="result-callout" id="transportDashboard">$0 (15% target)</div><div class="hint" id="fixedTransportSummary">Fixed car costs: $68 (insurance, rego/CTP, servicing, tyres and repairs)</div>
         </div>
         <div class="card">
           <div class="card-title">Budget allocation</div>
@@ -635,13 +635,11 @@ function calc() {
   if (fixedTransportEl) fixedTransportEl.textContent = fmt(fixedTransport) + '/wk';
   const transportActual = transportWeekly + fixedTransport;
   const incomeDashboard = document.getElementById('incomeDashboard');
-  if (incomeDashboard) incomeDashboard.textContent = fmt(weeklyIncome) + '/week net';
+  if (incomeDashboard) incomeDashboard.textContent = fmt(weeklyIncome) + ' (100%)';
   const housingDashboard = document.getElementById('housingDashboard');
-  if (housingDashboard) housingDashboard.textContent = fmt(housingTotal) + '/week';
+  if (housingDashboard) housingDashboard.textContent = fmt(housingTotal) + ' (' + v('housingTarget') + '% target)';
   const transportDashboard = document.getElementById('transportDashboard');
-  if (transportDashboard) transportDashboard.textContent = fmt(transportActual) + '/week';
-  const transportTargetEl = document.getElementById('transportTargetSummary');
-  if (transportTargetEl) transportTargetEl.innerHTML = 'Target: ' + fmt(weeklyIncome * CATEGORY_TARGETS.Transport) + '/week (15%)<br>Actual: ' + fmt(transportActual) + '/week (' + pct(transportActual, weeklyIncome) + ')';
+  if (transportDashboard) transportDashboard.textContent = fmt(transportActual) + ' (' + (CATEGORY_TARGETS.Transport * 100).toFixed(0) + '% target)';
   const maxEl = document.getElementById('maxPriceResult');
   if (document.getElementById('showMaxPrice').checked) { const targetWeeklyMortgage = weeklyIncome * v('housingTarget') / 100 - outgoingsWeekly; const targetMonthlyMortgage = targetWeeklyMortgage * 52 / 12; const pv = rate > 0 && targetMonthlyMortgage > 0 ? targetMonthlyMortgage * (1 - Math.pow(1 + rate, -months)) / rate : 0; const maxPrice = pv > 0 ? (pv + deposit) / (1 - govtPct) : 0; maxEl.textContent = maxPrice > 0 ? 'Estimated maximum purchase price: ' + fmtd(maxPrice) + ' at ' + v('housingTarget') + '% housing costs' : 'The target leaves no room for mortgage repayments after property outgoings.'; } else maxEl.textContent = 'Turn on maximum price to see the purchase price supported at your housing target.';
 
