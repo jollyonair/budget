@@ -297,6 +297,7 @@
           <div class="field"><label>Distance one-way (km)</label><input type="number" id="distanceKm" value="40" step="1" oninput="calc()"></div>
           <div class="field"><label>Expected tolls/week ($)</label><input type="number" id="weeklyTolls" value="60" min="0" step="1" oninput="calc()"></div>
         </div>
+        <div class="field"><label>Fixed car costs/week</label><input type="number" id="c_carOwnership" value="68" step="5" oninput="calc()"><div class="hint">Insurance, rego/CTP, servicing, tyres and repairs. Excludes petrol and tolls.</div></div>
         <div class="two-col">
           <div class="field">
             <label>Office days per week</label>
@@ -337,11 +338,11 @@
         </div>
         <div class="two-col">
           <div class="field">
-            <label>Medical &amp; wellbeing</label>
+            <label>Medical &amp; pharmacy</label>
             <input type="number" id="c_medical" value="127.50" step="5" oninput="calc()">
             </div>
           <div class="field">
-            <label>Clothing &amp; personal care</label>
+            <label>Care &amp; clothing</label>
             <input type="number" id="c_clothing" value="64.09" step="5" oninput="calc()">
           </div>
         </div>
@@ -377,11 +378,6 @@
         </div>
         <div class="two-col">
           <div class="field">
-            <label>Car ownership &amp; maintenance</label>
-            <input type="number" id="c_carOwnership" value="68" step="5" oninput="calc()">
-            <div class="hint">Insurance, rego/CTP, servicing, tyres and repairs. Excludes petrol and tolls.</div>
-          </div>
-          <div class="field">
             <label>Work/Education</label>
             <input type="number" id="c_workCreative" value="25" step="5" oninput="calc()">
           </div>
@@ -392,12 +388,8 @@
         </div>
         <div class="two-col">
           <div class="field">
-            <label>Giving &amp; tithing</label>
+            <label>Donations</label>
             <input type="number" id="c_giving" value="20" step="5" oninput="calc()">
-          </div>
-          <div class="field">
-            <label>Miscellaneous</label>
-            <input type="number" id="c_misc" value="0" step="5" oninput="calc()">
           </div>
         </div>
       </div>
@@ -512,13 +504,13 @@ const DEFAULTS = {
   distanceKm: 40, weeklyTolls: 60, officeDays: 5, fuelEff: 10, petrolPrice: 2.08,
   c_groceries: 280, c_dining: 1.34, c_medical: 127.50, c_clothing: 64.09,
   c_pets: 80, c_utilities: 84, c_household: 20, c_subs: 14,
-  c_gifts: 17.63, c_memberships: 7.32, c_carOwnership: 68, c_workCreative: 25, c_it: 12, c_misc: 0, c_giving: 20
+  c_gifts: 17.63, c_memberships: 7.32, c_carOwnership: 68, c_workCreative: 25, c_it: 12, c_giving: 20
 };
 
 const MAX_LOAN = 304000;
 
 const CATEGORY_TARGETS = {
-  Housing: 0.35, Transport: 0.15, 'Groceries & household': 0.10, Medical: 0.05,
+  Housing: 0.35, Transport: 0.15, 'Groceries & household': 0.10, 'Medical & pharmacy': 0.05,
   Pets: 0.03, Utilities: 0.05, 'Care & clothing': 0.04, 'Gifts & family': 0.03,
   Donations: 0.02, Entertainment: 0.01, 'Work/Education': 0.05, IT: 0.02, Savings: 0.10
 };
@@ -561,7 +553,7 @@ function renderDashboard(data, weeklyIncome) {
   const pie = document.getElementById('pieChart');
   if (pie) pie.style.background = 'conic-gradient(' + segments.map(item => item.segment).join(', ') + ')';
   const legend = document.getElementById('pieLegend');
-  if (legend) legend.innerHTML = segments.map(item => '<div class="legend-item"><span class="legend-swatch" style="background:' + item.color + '"></span><span>' + item.name + ' ' + pct(item.actual, weeklyIncome) + ' (target ' + ((CATEGORY_TARGETS[item.name] || 0) * 100).toFixed(0) + '%)</span></div>').join('');
+  if (legend) legend.innerHTML = segments.map(item => '<div class="legend-item"><span class="legend-swatch" style="background:' + item.color + '"></span><span>' + item.name + ' ' + pct(item.actual, weeklyIncome) + ' (' + ((CATEGORY_TARGETS[item.name] || 0) * 100).toFixed(0) + '%)</span></div>').join('');
   target.innerHTML = Object.entries(data).map(([name, actual]) => {
     const targetPct = CATEGORY_TARGETS[name] || 0;
     const targetAmount = weeklyIncome * targetPct;
@@ -570,7 +562,7 @@ function renderDashboard(data, weeklyIncome) {
     const delta = actual - targetAmount;
     const isSavings = name === 'Savings';
     const favourable = isSavings ? delta >= 0 : delta <= 0;
-    return '<div class="category-card ' + (favourable ? '' : 'category-over') + '"><div class="category-name">' + name + ' ' + actualPct.toFixed(1) + '% (target ' + (targetPct * 100).toFixed(0) + '%)</div><div class="category-values"><span>Actual <strong>' + fmt(actual) + '</strong></span><span>Target ' + fmt(targetAmount) + '</span></div><div class="category-bar"><div class="category-bar-fill" style="width:' + width + '%"></div></div><div class="hint ' + (favourable ? 'status-good' : 'status-bad') + '">' + (delta >= 0 ? '+' : '') + fmtd(delta) + ' versus target</div></div>';
+    return '<div class="category-card ' + (favourable ? '' : 'category-over') + '"><div class="category-name">' + name + ' ' + actualPct.toFixed(1) + '% (' + (targetPct * 100).toFixed(0) + '%)</div><div class="category-values"><span>Actual <strong>' + fmt(actual) + '</strong></span><span>Target ' + fmt(targetAmount) + '</span></div><div class="category-bar"><div class="category-bar-fill" style="width:' + width + '%"></div></div><div class="hint ' + (favourable ? 'status-good' : 'status-bad') + '">' + (delta >= 0 ? '+' : '') + fmtd(delta) + ' versus target</div></div>';
   }).join('');
 }
 
@@ -620,7 +612,7 @@ function calc() {
   const medical = v('c_medical');
   const food = v('c_groceries') + v('c_dining');
   const personal = v('c_clothing') + v('c_pets') + v('c_utilities') + v('c_household') +
-    v('c_subs') + v('c_gifts') + v('c_memberships') + v('c_carOwnership') + v('c_workCreative') + v('c_it') + v('c_misc') + v('c_giving');
+    v('c_subs') + v('c_gifts') + v('c_memberships') + v('c_carOwnership') + v('c_workCreative') + v('c_it') + v('c_giving');
   const livingTotal = food + medical + personal;
 
   // Totals
@@ -666,7 +658,7 @@ function calc() {
     Housing: housingTotal,
     Transport: transportActual,
     'Groceries & household': food + v('c_household'),
-    Medical: medical,
+    'Medical & pharmacy': medical,
     Pets: v('c_pets'),
     Utilities: v('c_utilities'),
     'Care & clothing': v('c_clothing'),
@@ -725,7 +717,7 @@ function showTab(name) {
 }
 
 function resetLiving() {
-  const cats = ['groceries','dining','medical','clothing','pets','utilities','household','subs','gifts','memberships','carOwnership','workCreative','it','misc','giving'];
+  const cats = ['groceries','dining','medical','clothing','pets','utilities','household','subs','gifts','memberships','carOwnership','workCreative','it','giving'];
   cats.forEach(c => {
     const el = document.getElementById('c_' + c);
     if (el) el.value = DEFAULTS['c_' + c];
