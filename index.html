@@ -104,8 +104,9 @@
   input[type="range"] { width: 100%; accent-color: var(--blue); }
   .check-row { display: flex; gap: 8px; align-items: center; font-size: 12px; color: var(--text2); }
   .result-callout { background: var(--blue-bg); color: var(--blue); border-radius: var(--radius); padding: 10px 12px; font-size: 12px; margin-top: 12px; }
-  .dashboard-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .dashboard-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
   .dashboard-grid .card { margin-bottom: 0; }
+  .dashboard-grid .card:last-child { grid-column: 1 / -1; }
   .category-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
   .category-card { border: 0.5px solid var(--border); border-radius: var(--radius); padding: 9px 10px; background: var(--surface2); }
   .category-name { font-size: 12px; font-weight: 600; }
@@ -120,7 +121,7 @@
   .legend-swatch { width: 8px; height: 8px; border-radius: 2px; flex-shrink: 0; }
   .status-good { color: var(--green); }
   .status-bad { color: var(--red); }
-  @media (max-width: 760px) { .dashboard-grid, .category-grid { grid-template-columns: 1fr; } }
+  @media (max-width: 760px) { .dashboard-grid, .category-grid { grid-template-columns: 1fr; } .dashboard-grid .card:last-child { grid-column: auto; } }
 
   .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
   .three-col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
@@ -225,13 +226,13 @@
 
     <div id="tab-dashboard" class="tab-panel active">
       <div class="dashboard-grid">
-        <div class="card"><div class="card-title">Income</div><div class="result-callout" id="incomeDashboard">$0/week net</div><div class="hint">Edit income in the Income &amp; housing tab.</div></div>
+        <div class="card"><div class="card-title">Income</div><div class="result-callout" id="incomeDashboard">$0/week net</div></div>
         <div class="card">
-          <div class="card-title">Housing overview</div>
+          <div class="card-title">Housing</div>
           <div class="result-callout" id="housingDashboard">$0/week</div><div class="hint" id="housingTargetHint">Target: $0/week</div>
         </div>
         <div class="card">
-          <div class="card-title">Transport overview</div>
+          <div class="card-title">Transport</div>
           <div class="result-callout" id="transportDashboard">$0/week</div><div class="hint" id="fixedTransportSummary">Fixed car costs: $68/week</div><div class="hint" id="transportTargetSummary">Target: $0/week (15%)<br>Actual: $0/week (0%)</div>
         </div>
         <div class="card">
