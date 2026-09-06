@@ -104,6 +104,18 @@
   input[type="range"] { width: 100%; accent-color: var(--blue); }
   .check-row { display: flex; gap: 8px; align-items: center; font-size: 12px; color: var(--text2); }
   .result-callout { background: var(--blue-bg); color: var(--blue); border-radius: var(--radius); padding: 10px 12px; font-size: 12px; margin-top: 12px; }
+  .dashboard-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .dashboard-grid .card { margin-bottom: 0; }
+  .category-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+  .category-card { border: 0.5px solid var(--border); border-radius: var(--radius); padding: 9px 10px; background: var(--surface2); }
+  .category-name { font-size: 12px; font-weight: 600; }
+  .category-values { display: flex; justify-content: space-between; gap: 8px; margin-top: 3px; font-size: 11px; color: var(--text2); }
+  .category-values strong { color: var(--text); }
+  .category-bar { height: 4px; margin-top: 7px; background: var(--bg); border-radius: 3px; overflow: hidden; }
+  .category-bar-fill { height: 100%; background: var(--blue); border-radius: 3px; }
+  .pie-chart { width: 128px; height: 128px; border-radius: 50%; margin: 0 auto 10px; background: conic-gradient(var(--blue) 0 25%, #1D9E75 25% 45%, #EF9F27 45% 65%, #E24B4A 65% 80%, #7F77DD 80% 100%); position: relative; }
+  .pie-chart::after { content: ''; position: absolute; inset: 28px; border-radius: 50%; background: var(--surface); }
+  @media (max-width: 760px) { .dashboard-grid, .category-grid { grid-template-columns: 1fr; } }
 
   .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
   .three-col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
@@ -200,40 +212,67 @@
 
     <!-- Tabs -->
     <div class="tabs">
-      <button class="tab-btn active" onclick="showTab('income')">Income &amp; property</button>
-      <button class="tab-btn" onclick="showTab('transport')">Transport &amp; work</button>
+      <button class="tab-btn active" onclick="showTab('dashboard')">Dashboard</button>
+      <button class="tab-btn" onclick="showTab('income')">Housing details</button>
+      <button class="tab-btn" onclick="showTab('transport')">Transport details</button>
       <button class="tab-btn" onclick="showTab('living')">Living costs</button>
     </div>
 
-    <!-- TAB 1: Income & Property -->
-    <div id="tab-income" class="tab-panel active">
-
-      <div class="card">
-        <div class="card-title">Income</div>
-        <div class="two-col">
-          <div class="field">
-            <label>Chris take-home income (annual)</label>
-            <input type="number" id="chrisIncome" value="70000" step="500" oninput="calc()">
+    <div id="tab-dashboard" class="tab-panel active">
+      <div class="dashboard-grid">
+        <div class="card">
+          <div class="card-title">Net household income</div>
+          <div class="two-col">
+            <div class="field"><label>Amount in hand</label><input type="number" id="incomeAmount" value="73848" step="100" oninput="calc()"></div>
+            <div class="field"><label>Income period</label><select id="incomePeriod" onchange="calc()"><option value="weekly">Weekly</option><option value="fortnightly">Fortnightly</option><option value="monthly">Monthly</option><option value="yearly" selected>Yearly</option></select></div>
           </div>
-          <div class="field">
-            <label>Vanessa DSP income (annual)</label>
-            <input type="number" id="vanessaIncome" value="3848" step="100" oninput="calc()">
+          <div class="hint" id="incomeWeeklyHint">$0 per week</div>
+        </div>
+        <div class="card">
+          <div class="card-title">Housing overview</div>
+          <div class="two-col">
+            <div class="field"><label>Purchase price ($)</label><input type="number" id="purchasePrice" value="880000" step="5000" oninput="calc()"></div>
+            <div class="field"><label>Housing target (%)</label><input type="number" id="housingTarget" value="35" min="1" max="100" step="1" oninput="calc()"></div>
+          </div>
+          <div class="three-col">
+            <div class="field"><label>Strata/qtr ($)</label><input type="number" id="strata" value="1525.07" step="10" oninput="calc()"></div>
+            <div class="field"><label>Council/qtr ($)</label><input type="number" id="council" value="334.50" step="5" oninput="calc()"></div>
+            <div class="field"><label>Water/qtr ($)</label><input type="number" id="water" value="172.79" step="5" oninput="calc()"></div>
+          </div>
+          <div class="hint" id="housingTargetHint">Target: $0/week</div>
+        </div>
+        <div class="card">
+          <div class="card-title">Transport overview</div>
+          <div class="two-col">
+            <div><div class="field"><label>Distance one-way (km)</label><input type="number" id="distanceKm" value="19" step="1" oninput="calc()"></div><div class="field"><label>Expected tolls/week ($)</label><input type="number" id="weeklyTolls" value="0" min="0" step="1" oninput="calc()"></div></div>
+            <div><div class="field"><label>Fixed car costs/week</label><div class="result-callout" id="fixedTransportSummary">$68</div></div><div class="hint">Insurance, rego/CTP, servicing, tyres and repairs. Petrol and tolls are separate.</div><div class="hint" id="transportTargetSummary">Target: $0/week (15%)<br>Actual: $0/week (0%)</div></div>
           </div>
         </div>
+        <div class="card">
+          <div class="card-title">Budget allocation</div>
+          <div class="field"><label>Weekly savings allocation ($)</label><input type="number" id="savingsWeekly" value="0" min="0" step="10" oninput="calc()"></div>
+          <div class="pie-chart" aria-label="Budget allocation overview"></div>
+          <div class="hint" style="text-align:center">Detailed category comparisons are below. Edit assumptions in the tabs.</div>
+        </div>
       </div>
+      <div class="card" style="margin-top:14px"><div class="card-title">Target versus actual weekly budget</div><div class="category-grid" id="dashboardCategories"></div></div>
+    </div>
+
+    <!-- TAB 1: Housing details -->
+    <div id="tab-income" class="tab-panel">
 
       <div class="card">
-        <div class="card-title">Property</div>
+        <div class="card-title">Deposit and borrowing</div>
         <div class="two-col">
-          <div class="field">
-            <label>Purchase price ($)</label>
-            <input type="number" id="purchasePrice" value="880000" step="5000" oninput="calc()">
-          </div>
           <div class="field">
             <label>Deposit ($)</label>
             <input type="number" id="deposit" value="350000" step="5000" oninput="calc()">
           </div>
         </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Borrowing details</div>
         <div class="two-col">
           <div class="field">
             <label>Property type</label>
@@ -246,25 +285,7 @@
         </div>
         <div class="two-col"><div class="field"><label>Government equity (%)</label><div class="range-row"><input type="range" id="govtEquityRange" min="0" max="30" step="0.01" value="30.05" oninput="syncEquity(this.value)"><input type="number" id="govtEquity" value="30.05" step="0.01" oninput="syncEquity(this.value)"></div><div class="hint" id="equityHint">Maximum depends on property type</div></div><div class="field"><label>Loan term (years)</label><input type="number" id="loanTerm" value="30" step="1" min="1" oninput="calc()"></div></div>
         <div class="field"><label>Loan amount</label><input type="number" id="loanAmount" value="265560" step="5000" oninput="calc()"><label class="check-row"><input type="checkbox" id="manualLoan" onchange="calc()"> Enter loan amount directly (otherwise calculated from price, deposit and equity)</label></div>
-        <div class="divider"></div><div class="two-col"><div class="field"><label>Housing target (% of income)</label><input type="number" id="housingTarget" value="35" min="1" max="100" step="1" oninput="calc()"></div><div class="field"><label>Calculate maximum price</label><label class="toggle"><input type="checkbox" id="showMaxPrice" onchange="calc()"><span class="toggle-slider"></span></label></div></div><div class="result-callout" id="maxPriceResult">Turn on maximum price to see the purchase price supported at your housing target.</div>
-      </div>
-
-      <div class="card">
-        <div class="card-title">Outgoings (quarterly)</div>
-        <div class="three-col">
-          <div class="field">
-            <label>Strata ($)</label>
-            <input type="number" id="strata" value="1525.07" step="10" oninput="calc()">
-          </div>
-          <div class="field">
-            <label>Council ($)</label>
-            <input type="number" id="council" value="334.50" step="5" oninput="calc()">
-          </div>
-          <div class="field">
-            <label>Water ($)</label>
-            <input type="number" id="water" value="172.79" step="5" oninput="calc()">
-          </div>
-        </div>
+        <div class="divider"></div><div class="two-col"><div class="field"><label>Calculate maximum price</label><label class="toggle"><input type="checkbox" id="showMaxPrice" onchange="calc()"><span class="toggle-slider"></span></label></div><div class="field"><div class="result-callout" id="maxPriceResult">Turn on maximum price to see the purchase price supported at your housing target.</div></div></div>
       </div>
 
     </div>
@@ -275,10 +296,6 @@
       <div class="card">
         <div class="card-title">Commute</div>
         <div class="two-col">
-          <div class="field">
-            <label>Distance one-way (km)</label>
-            <input type="number" id="distanceKm" value="19" step="1" oninput="calc()">
-          </div>
           <div class="field">
             <label>Office days per week</label>
             <input type="number" id="officeDays" value="5" step="1" min="0" max="5" oninput="calc()">
@@ -295,14 +312,6 @@
             <div class="hint">~$1.92 now, est. ~$2.08 post-3 Aug excise</div>
           </div>
         </div>
-      </div>
-
-      <div class="card">
-        <div class="card-title">Tolls and rebates</div>
-        <div class="field">
-          <label>NSW toll relief</label><select id="tollRebateType" onchange="calc()"><option value="none">No rebate</option><option value="weeklyCap">NSW $60 weekly cap (budgeting assumption)</option><option value="m5Cashback">M5 South-West Cashback</option></select><div class="hint">Choose one. We budget at the planned $60 cap; the cap covers eligible M4/M7 trips, while M5 Cashback is separate.</div>
-        </div>
-        <div class="field"><label>Tolls per office day ($)</label><input type="number" id="tollsPerDay" value="0" min="0" step="1" oninput="calc()"><div class="hint">Enter the actual M4/M7/etc. trip cost for your route. Check current rates before relying on it.</div></div>
       </div>
 
     </div>
@@ -349,7 +358,7 @@
             <input type="number" id="c_household" value="20" step="5" oninput="calc()">
           </div>
           <div class="field">
-            <label>Subscriptions &amp; digital</label>
+            <label>Entertainment</label>
             <input type="number" id="c_subs" value="14" step="5" oninput="calc()">
           </div>
         </div>
@@ -370,8 +379,12 @@
             <div class="hint">Insurance, rego/CTP, servicing, tyres and repairs. Excludes petrol and tolls.</div>
           </div>
           <div class="field">
-            <label>Work &amp; creative</label>
-            <input type="number" id="c_workCreative" value="37" step="5" oninput="calc()">
+            <label>Work</label>
+            <input type="number" id="c_workCreative" value="25" step="5" oninput="calc()">
+          </div>
+          <div class="field">
+            <label>IT</label>
+            <input type="number" id="c_it" value="12" step="5" oninput="calc()">
           </div>
         </div>
         <div class="two-col">
@@ -407,7 +420,7 @@
         <div class="brow"><span class="brow-label">Mortgage</span><span class="brow-amount" id="r_summary_mortgage">$0</span></div>
         <div class="brow"><span class="brow-label">Strata + council rates</span><span class="brow-amount" id="r_summary_rates">$0</span></div>
         <div class="brow"><span class="brow-label">Water</span><span class="brow-amount" id="r_summary_water">$0</span></div>
-        <div class="brow"><span class="brow-label">Tolls after rebate</span><span class="brow-amount" id="r_summary_tolls">$0</span></div>
+        <div class="brow"><span class="brow-label">Tolls</span><span class="brow-amount" id="r_summary_tolls">$0</span></div>
         <div class="total-row"><span>Total per week</span><span id="r_summary_total">$0</span></div>
         <div class="brow-pct" style="width:100%; margin-top:6px" id="r_summary_pct">0% of weekly income</div>
       </div>
@@ -489,15 +502,20 @@
 
 <script>
 const DEFAULTS = {
-  chrisIncome: 70000, vanessaIncome: 3848,
+  incomeAmount: 73848, incomePeriod: 'yearly', savingsWeekly: 0,
   purchasePrice: 880000, deposit: 350000, govtEquity: 30, propertyType: 'established', loanAmount: 266000, manualLoan: false,
   interestRate: 6.13, loanTerm: 30,
   strata: 1525.07, council: 334.50, water: 172.79,
-  distanceKm: 19, officeDays: 5, fuelEff: 10, petrolPrice: 2.08, tollsPerDay: 0,
-  tollRebateType: 'none',
+  distanceKm: 19, weeklyTolls: 0, officeDays: 5, fuelEff: 10, petrolPrice: 2.08,
   c_groceries: 280, c_dining: 1.34, c_medical: 127.50, c_clothing: 64.09,
   c_pets: 80, c_utilities: 84, c_household: 20, c_subs: 14,
-  c_gifts: 17.63, c_memberships: 7.32, c_carOwnership: 68, c_workCreative: 37, c_misc: 0, c_giving: 20
+  c_gifts: 17.63, c_memberships: 7.32, c_carOwnership: 68, c_workCreative: 25, c_it: 12, c_misc: 0, c_giving: 20
+};
+
+const CATEGORY_TARGETS = {
+  Housing: 0.35, Transport: 0.15, 'Groceries & household': 0.10, Medical: 0.05,
+  Pets: 0.03, Utilities: 0.05, 'Care & clothing': 0.04, 'Gifts & family': 0.03,
+  Donations: 0.02, Entertainment: 0.03, Work: 0.03, IT: 0.02, Savings: 0.10
 };
 
 function v(id) {
@@ -516,12 +534,31 @@ function equityMaximum() { return v('propertyType') === 'newBuild' ? 40 : 30; }
 function setEquityLimit() { const max = equityMaximum(), range = document.getElementById('govtEquityRange'), input = document.getElementById('govtEquity'); range.max = max; const value = Math.min(parseFloat(input.value) || 0, max); range.value = value; input.value = value; document.getElementById('equityHint').textContent = 'Maximum: ' + max + '% for this property type'; }
 function syncEquity(value) { const safe = Math.max(0, Math.min(parseFloat(value) || 0, equityMaximum())); document.getElementById('govtEquity').value = safe; document.getElementById('govtEquityRange').value = safe; calc(); }
 
+function weeklyIncomeFromInput() {
+  const amount = v('incomeAmount');
+  const period = v('incomePeriod');
+  const annual = period === 'weekly' ? amount * 52 : period === 'fortnightly' ? amount * 26 : period === 'monthly' ? amount * 12 : amount;
+  return annual / 52;
+}
+
+function renderDashboard(data, weeklyIncome) {
+  const target = document.getElementById('dashboardCategories');
+  if (!target) return;
+  target.innerHTML = Object.entries(data).map(([name, actual]) => {
+    const targetPct = CATEGORY_TARGETS[name] || 0;
+    const targetAmount = weeklyIncome * targetPct;
+    const actualPct = pctNum(actual, weeklyIncome);
+    const width = targetAmount > 0 ? Math.min(actual / targetAmount * 100, 100) : 0;
+    const delta = actual - targetAmount;
+    return '<div class="category-card"><div class="category-name">' + name + '</div><div class="category-values"><span>Actual <strong>' + fmt(actual) + '</strong> (' + actualPct.toFixed(1) + '%)</span><span>Target ' + fmt(targetAmount) + ' (' + (targetPct * 100).toFixed(0) + '%)</span></div><div class="category-bar"><div class="category-bar-fill" style="width:' + width + '%"></div></div><div class="hint">' + (delta >= 0 ? '+' : '') + fmtd(delta) + ' versus target</div></div>';
+  }).join('');
+}
+
 function calc() {
   // Income
-  const chrisNet = v('chrisIncome');
-  const vanessa = v('vanessaIncome');
-  const annualIncome = chrisNet + vanessa;
-  const weeklyIncome = annualIncome / 52;
+  const weeklyIncome = weeklyIncomeFromInput();
+  const incomeHint = document.getElementById('incomeWeeklyHint');
+  if (incomeHint) incomeHint.textContent = fmt(weeklyIncome) + ' per week';
 
   // Mortgage
   const price = v('purchasePrice');
@@ -551,17 +588,15 @@ function calc() {
   const dist = v('distanceKm');
   const litresPerDay = (dist * 2 / 100) * v('fuelEff');
   const petrolWeekly = litresPerDay * v('petrolPrice') * days;
-  const tollsWeekly = v('tollsPerDay') * days;
-  const rebateType = document.getElementById('tollRebateType').value;
-  const tollRebateWeekly = rebateType === 'm5Cashback' ? tollsWeekly : rebateType === 'weeklyCap' && tollsWeekly >= 60 ? Math.min(tollsWeekly - 60, 350, 5000 / 52) : 0;
-  const transportWeekly = petrolWeekly + Math.max(0, tollsWeekly - tollRebateWeekly);
-  const netTollsWeekly = Math.max(0, tollsWeekly - tollRebateWeekly);
+  const tollsWeekly = v('weeklyTolls');
+  const transportWeekly = petrolWeekly + tollsWeekly;
+  const netTollsWeekly = tollsWeekly;
 
   // Living costs
   const medical = v('c_medical');
   const food = v('c_groceries') + v('c_dining');
   const personal = v('c_clothing') + v('c_pets') + v('c_utilities') + v('c_household') +
-    v('c_subs') + v('c_gifts') + v('c_memberships') + v('c_carOwnership') + v('c_workCreative') + v('c_misc') + v('c_giving');
+    v('c_subs') + v('c_gifts') + v('c_memberships') + v('c_carOwnership') + v('c_workCreative') + v('c_it') + v('c_misc') + v('c_giving');
   const livingTotal = food + medical + personal;
 
   // Totals
@@ -571,6 +606,14 @@ function calc() {
   const surplusMonthly = surplus * 52 / 12;
   const summaryTotal = weeklyMort + outgoingsWeekly + netTollsWeekly;
   const breakdownTotal = petrolWeekly + livingTotal;
+  const housingTargetHint = document.getElementById('housingTargetHint');
+  if (housingTargetHint) housingTargetHint.textContent = 'Target: ' + fmt(weeklyIncome * v('housingTarget') / 100) + '/week';
+  const fixedTransport = v('c_carOwnership');
+  const fixedTransportEl = document.getElementById('fixedTransportSummary');
+  if (fixedTransportEl) fixedTransportEl.textContent = fmt(fixedTransport) + '/wk';
+  const transportActual = transportWeekly + fixedTransport;
+  const transportTargetEl = document.getElementById('transportTargetSummary');
+  if (transportTargetEl) transportTargetEl.innerHTML = 'Target: ' + fmt(weeklyIncome * CATEGORY_TARGETS.Transport) + '/week (15%)<br>Actual: ' + fmt(transportActual) + '/week (' + pct(transportActual, weeklyIncome) + ')';
   const maxEl = document.getElementById('maxPriceResult');
   if (document.getElementById('showMaxPrice').checked) { const targetWeeklyMortgage = weeklyIncome * v('housingTarget') / 100 - outgoingsWeekly; const targetMonthlyMortgage = targetWeeklyMortgage * 52 / 12; const pv = rate > 0 && targetMonthlyMortgage > 0 ? targetMonthlyMortgage * (1 - Math.pow(1 + rate, -months)) / rate : 0; const maxPrice = pv > 0 ? (pv + deposit) / (1 - govtPct) : 0; maxEl.textContent = maxPrice > 0 ? 'Estimated maximum purchase price: ' + fmtd(maxPrice) + ' at ' + v('housingTarget') + '% housing costs' : 'The target leaves no room for mortgage repayments after property outgoings.'; } else maxEl.textContent = 'Turn on maximum price to see the purchase price supported at your housing target.';
 
@@ -593,6 +636,21 @@ function calc() {
   set('r_summary_tolls', fmt(netTollsWeekly));
   set('r_summary_total', fmt(summaryTotal));
   set('r_summary_pct', pct(summaryTotal, weeklyIncome) + ' of weekly income');
+  renderDashboard({
+    Housing: housingTotal,
+    Transport: transportActual,
+    'Groceries & household': food + v('c_household'),
+    Medical: medical,
+    Pets: v('c_pets'),
+    Utilities: v('c_utilities'),
+    'Care & clothing': v('c_clothing'),
+    'Gifts & family': v('c_gifts'),
+    Donations: v('c_giving'),
+    Entertainment: v('c_subs') + v('c_memberships'),
+    Work: v('c_workCreative'),
+    IT: v('c_it'),
+    Savings: v('savingsWeekly')
+  }, weeklyIncome);
 
   set('r_income', fmt(weeklyIncome));
   set('r_income_pct', '100%');
@@ -641,7 +699,7 @@ function showTab(name) {
 }
 
 function resetLiving() {
-  const cats = ['groceries','dining','medical','clothing','pets','utilities','household','subs','gifts','memberships','carOwnership','workCreative','misc','giving'];
+  const cats = ['groceries','dining','medical','clothing','pets','utilities','household','subs','gifts','memberships','carOwnership','workCreative','it','misc','giving'];
   cats.forEach(c => {
     const el = document.getElementById('c_' + c);
     if (el) el.value = DEFAULTS['c_' + c];
