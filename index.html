@@ -5,723 +5,640 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Property Budget Calculator</title>
 <style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
+  *, *::before, *::after { box-sizing: border-box; }
   :root {
-    --bg: #f5f4f0;
-    --surface: #ffffff;
-    --surface2: #f9f8f5;
-    --border: rgba(0,0,0,0.1);
-    --border-strong: rgba(0,0,0,0.18);
-    --text: #0b0b0b;
-    --text2: #52514e;
-    --text3: #898781;
-    --blue: #2a78d6;
-    --blue-bg: #e6f1fb;
-    --green: #3B6D11;
-    --green-bg: #eaf3de;
-    --red: #A32D2D;
-    --red-bg: #fcebeb;
-    --amber: #854F0B;
-    --amber-bg: #faeeda;
-    --radius: 8px;
-    --shadow: 0 1px 3px rgba(0,0,0,0.07), 0 1px 2px rgba(0,0,0,0.04);
+    --bg:#f5f4f0; --surface:#fff; --surface2:#faf9f6; --border:rgba(0,0,0,.11); --border2:rgba(0,0,0,.18);
+    --text:#10100f; --muted:#5b5955; --muted2:#8b8881; --accent:#2a78d6; --accent-bg:#e8f2fc;
+    --good:#366b13; --good-bg:#edf6e5; --warn:#8a560d; --warn-bg:#fff2dc; --bad:#a02f2f; --bad-bg:#fcecec;
+    --radius:12px; --shadow:0 1px 3px rgba(0,0,0,.06);
   }
+  html { color-scheme: light; }
+  body { margin:0; background:var(--bg); color:var(--text); font:14px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; }
+  button,input,select { font:inherit; }
+  button { color:inherit; }
+  header { background:var(--surface); border-bottom:1px solid var(--border); }
+  .header-inner { max-width:1120px; margin:auto; padding:16px 22px; display:flex; align-items:baseline; gap:12px; flex-wrap:wrap; }
+  h1 { margin:0; font-size:18px; font-weight:700; }
+  .subtitle { color:var(--muted2); font-size:13px; }
+  main { max-width:1120px; margin:auto; padding:18px 22px 40px; }
+  .tabs { display:flex; gap:4px; width:max-content; background:var(--surface); padding:4px; border:1px solid var(--border2); border-radius:10px; margin-bottom:16px; }
+  .tab-btn { border:0; background:transparent; border-radius:7px; padding:9px 18px; cursor:pointer; color:var(--muted); font-weight:650; }
+  .tab-btn[aria-selected="true"] { background:var(--accent-bg); color:var(--accent); }
+  .tab-btn:focus-visible,.info-btn:focus-visible,.btn:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visible { outline:2px solid var(--accent); outline-offset:2px; }
+  .tab-panel[hidden] { display:none; }
 
-  body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    background: var(--bg);
-    color: var(--text);
-    font-size: 14px;
-    line-height: 1.5;
-    min-height: 100vh;
+  .overview-layout { display:grid; grid-template-columns:minmax(0,1fr) 340px; gap:16px; align-items:stretch; }
+  .stack { display:grid; gap:14px; }
+  .card { background:var(--surface); border:1px solid var(--border2); border-radius:var(--radius); padding:16px; box-shadow:var(--shadow); min-width:0; }
+  .card h2,.section-title { margin:0 0 12px; font-size:13px; line-height:1.2; text-transform:uppercase; letter-spacing:.05em; color:var(--muted); }
+  .scenario-grid { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:10px; }
+  .field label { display:block; color:var(--muted); font-size:12px; margin-bottom:5px; }
+  .field input,.field select { width:100%; min-height:42px; border:1px solid var(--border2); border-radius:8px; padding:8px 10px; background:var(--surface2); color:var(--text); }
+  .field input[type="number"] { appearance:textfield; -moz-appearance:textfield; }
+  .field input::-webkit-inner-spin-button,.field input::-webkit-outer-spin-button { -webkit-appearance:none; }
+  .hint { margin-top:5px; font-size:11px; color:var(--muted2); }
+  .status-banner { border-radius:10px; padding:11px 12px; margin-top:12px; font-size:13px; }
+  .status-good { color:var(--good); background:var(--good-bg); }
+  .status-warn { color:var(--warn); background:var(--warn-bg); }
+  .status-bad { color:var(--bad); background:var(--bad-bg); }
+
+  .pnl { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; }
+  .metric { background:var(--surface2); border:1px solid var(--border); border-radius:10px; padding:12px; }
+  .metric-label { color:var(--muted2); font-size:11px; text-transform:uppercase; letter-spacing:.05em; }
+  .metric-value { font-size:24px; font-weight:750; margin-top:3px; }
+  .metric-sub { margin-top:2px; font-size:12px; color:var(--muted); }
+  .metric-value.good { color:var(--good); } .metric-value.bad { color:var(--bad); } .metric-value.warn { color:var(--warn); }
+
+  .donut-wrap { display:grid; grid-template-columns:220px minmax(0,1fr); gap:18px; align-items:center; }
+  .donut { width:210px; aspect-ratio:1; border-radius:50%; position:relative; background:conic-gradient(#ccc 0 100%); margin:auto; }
+  .donut::after { content:""; position:absolute; inset:48px; background:var(--surface); border-radius:50%; }
+  .donut-center { position:absolute; inset:0; z-index:1; display:grid; place-content:center; text-align:center; pointer-events:none; }
+  .donut-center strong { font-size:25px; } .donut-center span { font-size:11px; color:var(--muted2); }
+  .legend { display:grid; grid-template-columns:1fr 1fr; gap:7px 12px; min-width:0; }
+  .legend-item { display:grid; grid-template-columns:9px minmax(0,1fr) auto; gap:6px; align-items:center; font-size:12px; min-width:0; }
+  .swatch { width:9px; height:9px; border-radius:3px; }
+  .legend-name { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:var(--muted); }
+  .legend-amt { font-weight:650; }
+
+  .side-card { position:sticky; top:14px; min-height:100%; }
+  .side-total { text-align:center; padding:5px 0 14px; border-bottom:1px solid var(--border); }
+  .side-total .label { color:var(--muted2); font-size:12px; }
+  .side-total .amount { font-size:38px; line-height:1.1; font-weight:780; margin-top:4px; }
+  .side-total .sub { color:var(--muted); font-size:13px; margin-top:3px; }
+  .breakdown { margin-top:12px; }
+  .row { display:flex; justify-content:space-between; align-items:baseline; gap:12px; padding:7px 0; border-bottom:1px solid var(--border); }
+  .row:last-child { border-bottom:0; }
+  .row span:first-child { color:var(--muted); }
+  .row strong { text-align:right; }
+  .row.total { border-top:1px solid var(--border2); margin-top:4px; padding-top:10px; font-size:15px; }
+
+  .budget-grid { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:14px; align-items:start; }
+  .budget-grid > .stack { display:contents; }
+  .budget-section { background:var(--surface); border:1px solid var(--border2); border-radius:var(--radius); overflow:visible; box-shadow:var(--shadow); }
+  .living-costs { grid-column:1 / -1; }
+  .living-budget-list { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); grid-template-rows:repeat(7,auto); grid-auto-flow:column; }
+  .living-budget-list .budget-row:nth-child(n+8) { border-left:1px solid var(--border); }
+  .living-budget-list .budget-row:nth-child(7),.living-budget-list .budget-row:nth-child(14) { border-bottom:0; }
+  .budget-section h2 { margin:0; padding:14px 16px 10px; font-size:13px; text-transform:uppercase; letter-spacing:.05em; color:var(--muted); }
+  .budget-list { border-top:1px solid var(--border); }
+  .budget-row { display:grid; grid-template-columns:minmax(0,1fr) 214px; gap:12px; align-items:center; padding:11px 16px; border-bottom:1px solid var(--border); position:relative; }
+  .budget-row:last-child { border-bottom:0; }
+  .label-line { display:flex; align-items:center; gap:7px; min-width:0; }
+  .label-line label { font-weight:650; }
+  .row-note { color:var(--muted2); font-size:11px; margin-top:2px; }
+  .money-input { position:relative; }
+  .money-input::before { content:"$"; position:absolute; left:10px; top:50%; transform:translateY(-50%); color:var(--muted2); pointer-events:none; }
+  .money-input input { width:100%; min-height:40px; padding:7px 9px 7px 23px; border:1px solid var(--border2); border-radius:8px; background:var(--surface2); text-align:right; }
+  .amount-control { display:grid; grid-template-columns:minmax(0,1fr) 104px; gap:6px; align-items:center; }
+  .period-select { width:100%; min-height:40px; border:1px solid var(--border2); border-radius:8px; padding:7px 8px; background:var(--surface2); color:var(--text); cursor:pointer; }
+  .amount-control .suffix { grid-column:1 / -1; }
+  .suffix { font-size:11px; color:var(--muted2); text-align:right; margin-top:2px; }
+
+  .info-btn { width:22px; height:22px; border-radius:50%; border:1px solid var(--border2); background:var(--surface2); color:var(--muted); display:inline-grid; place-items:center; padding:0; cursor:pointer; font-size:12px; font-weight:750; flex:0 0 auto; }
+  .info-popover { position:absolute; z-index:20; left:16px; top:50px; width:min(390px,calc(100vw - 48px)); background:#161616; color:#fff; border-radius:10px; padding:11px 12px; box-shadow:0 8px 28px rgba(0,0,0,.2); font-size:12px; line-height:1.45; }
+  .info-popover[hidden] { display:none; }
+  .info-popover strong { color:#fff; }
+  .info-popover .dim { color:#c9c9c9; }
+
+  details.advanced { border-top:1px solid var(--border); }
+  details.advanced summary { cursor:pointer; list-style:none; padding:12px 16px; font-weight:650; color:var(--muted); }
+  details.advanced summary::-webkit-details-marker { display:none; }
+  details.advanced summary::after { content:"+"; float:right; }
+  details.advanced[open] summary::after { content:"–"; }
+  .advanced-body { padding:0 16px 16px; display:grid; gap:10px; }
+  .mini-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  .switch-row { display:flex; justify-content:space-between; align-items:center; gap:12px; padding:8px 0; }
+  .switch-row input { width:18px; height:18px; accent-color:var(--accent); }
+  .callout { padding:10px 12px; border-radius:8px; background:var(--accent-bg); color:#1d5f9f; font-size:12px; }
+  .btn-row { display:flex; gap:8px; flex-wrap:wrap; margin-top:14px; }
+  .btn { border:1px solid var(--border2); border-radius:8px; background:var(--surface); padding:9px 12px; cursor:pointer; font-weight:650; }
+  .btn.primary { color:var(--accent); border-color:#a7caee; background:var(--accent-bg); }
+  .btn:hover { background:var(--surface2); }
+  .footer-note { color:var(--muted2); font-size:11px; margin-top:10px; }
+
+  @media (max-width:880px) {
+    .overview-layout,.budget-grid { grid-template-columns:1fr; }
+    .side-card { position:static; min-height:0; }
+    .living-costs { grid-column:auto; }
+    .scenario-grid { grid-template-columns:1fr 1fr; }
   }
-
-  header {
-    background: var(--surface);
-    border-bottom: 0.5px solid var(--border-strong);
-    padding: 14px 24px;
-    display: flex;
-    align-items: baseline;
-    gap: 12px;
+  @media (max-width:620px) {
+    .header-inner,main { padding-left:12px; padding-right:12px; }
+    .subtitle { width:100%; }
+    .tabs { width:100%; } .tab-btn { flex:1; }
+    .scenario-grid,.pnl,.mini-grid { grid-template-columns:1fr; }
+    .donut-wrap { grid-template-columns:1fr; }
+    .legend { grid-template-columns:1fr 1fr; }
+    .living-budget-list { grid-template-columns:1fr; grid-template-rows:none; grid-auto-flow:row; }
+    .living-budget-list .budget-row:nth-child(n) { border-left:0; border-bottom:1px solid var(--border); }
+    .living-budget-list .budget-row:last-child { border-bottom:0; }
+    .budget-row { grid-template-columns:minmax(0,1fr) 190px; padding-left:12px; padding-right:12px; }
+    .info-popover { left:12px; }
   }
-  header h1 { font-size: 17px; font-weight: 600; }
-  header span { font-size: 13px; color: var(--text3); }
-
-  .layout {
-    display: grid;
-    grid-template-columns: 1fr 320px;
-    gap: 20px;
-    padding: 20px 24px;
-    max-width: 1100px;
-    margin: 0 auto;
-  }
-
-  @media (max-width: 760px) {
-    .layout { grid-template-columns: 1fr; padding: 12px; gap: 12px; }
-    .results-panel { order: -1; }
-  }
-
-  /* Tabs */
-  .tabs { display: flex; gap: 0; margin-bottom: 16px; background: var(--surface); border-radius: var(--radius); border: 0.5px solid var(--border-strong); overflow: hidden; }
-  .tab-btn {
-    flex: 1; padding: 9px 8px; font-size: 12px; font-weight: 500; background: transparent;
-    border: none; cursor: pointer; color: var(--text2); border-right: 0.5px solid var(--border);
-    transition: background 0.1s;
-  }
-  .tab-btn:last-child { border-right: none; }
-  .tab-btn.active { background: var(--blue-bg); color: var(--blue); }
-  .tab-btn:hover:not(.active) { background: var(--surface2); }
-
-  .tab-panel { display: none; }
-  .tab-panel.active { display: block; }
-
-  /* Cards */
-  .card {
-    background: var(--surface);
-    border-radius: 12px;
-    border: 0.5px solid var(--border-strong);
-    padding: 16px 18px;
-    margin-bottom: 14px;
-  }
-  .card-title { font-size: 13px; font-weight: 600; color: var(--text2); margin-bottom: 14px; text-transform: uppercase; letter-spacing: 0.04em; }
-
-  /* Form rows */
-  .field { margin-bottom: 11px; }
-  .field:last-child { margin-bottom: 0; }
-  .field label { display: block; font-size: 12px; color: var(--text2); margin-bottom: 4px; }
-  .field input[type="number"], .field input[type="text"], .field select {
-    width: 100%; padding: 7px 10px; border: 0.5px solid var(--border-strong);
-    border-radius: var(--radius); font-size: 13px; background: var(--surface2);
-    color: var(--text); outline: none; transition: border-color 0.15s;
-    -moz-appearance: textfield;
-  }
-  .field input::-webkit-outer-spin-button,
-  .field input::-webkit-inner-spin-button { -webkit-appearance: none; }
-  .field input:focus, .field select:focus { border-color: var(--blue); background: #fff; }
-  .field .hint { font-size: 11px; color: var(--text3); margin-top: 3px; }
-  .range-row { display: grid; grid-template-columns: 1fr 92px; gap: 10px; align-items: center; }
-  input[type="range"] { width: 100%; accent-color: var(--blue); }
-  .check-row { display: flex; gap: 8px; align-items: center; font-size: 12px; color: var(--text2); }
-  .result-callout { background: var(--blue-bg); color: var(--blue); border-radius: var(--radius); padding: 10px 12px; font-size: 12px; margin-top: 12px; }
-  .dashboard-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
-  .dashboard-grid .card { margin-bottom: 0; }
-  .dashboard-grid .card:last-child { grid-column: 1 / -1; }
-  .category-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
-  .category-card { border: 0.5px solid var(--border); border-radius: var(--radius); padding: 9px 10px; background: var(--surface2); }
-  .category-over { border-color: var(--red); background: var(--red-bg); }
-  .summary-good { background: var(--green-bg); color: var(--green); border-color: var(--green); font-weight: 600; }
-  .summary-over { background: var(--red-bg); color: var(--red); border-color: var(--red); font-weight: 700; }
-  .category-name { font-size: 12px; font-weight: 600; }
-  .category-values { display: flex; justify-content: space-between; gap: 8px; margin-top: 3px; font-size: 11px; color: var(--text2); }
-  .category-values strong { color: var(--text); }
-  .category-bar { height: 4px; margin-top: 7px; background: var(--bg); border-radius: 3px; overflow: hidden; }
-  .category-bar-fill { height: 100%; background: var(--blue); border-radius: 3px; }
-  .pie-chart { width: 300px; height: 300px; border-radius: 50%; margin: 4px auto 18px; background: conic-gradient(var(--blue) 0 25%, #1D9E75 25% 45%, #EF9F27 45% 65%, #E24B4A 65% 80%, #7F77DD 80% 100%); position: relative; }
-  .pie-chart::after { content: ''; position: absolute; inset: 64px; border-radius: 50%; background: var(--surface); }
-  .pie-legend { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px 12px; font-size: 11px; color: var(--text2); }
-  .legend-item { display: flex; align-items: center; gap: 5px; min-width: 0; }
-  .legend-swatch { width: 8px; height: 8px; border-radius: 2px; flex-shrink: 0; }
-  .status-good { color: var(--green); }
-  .status-bad { color: var(--red); }
-  @media (max-width: 760px) { .dashboard-grid, .category-grid, .pie-legend { grid-template-columns: 1fr; } .dashboard-grid .card:last-child { grid-column: auto; } .pie-chart { width: 240px; height: 240px; } .pie-chart::after { inset: 52px; } }
-
-  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-  .three-col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
-
-  /* Toggle */
-  .toggle-row { display: flex; align-items: center; justify-content: space-between; padding: 6px 0; }
-  .toggle-row label { font-size: 13px; color: var(--text); }
-  .toggle { position: relative; width: 36px; height: 20px; flex-shrink: 0; }
-  .toggle input { opacity: 0; width: 0; height: 0; position: absolute; }
-  .toggle-slider {
-    position: absolute; inset: 0; background: #ccc; border-radius: 20px; cursor: pointer; transition: background 0.2s;
-  }
-  .toggle-slider::before {
-    content: ''; position: absolute; width: 14px; height: 14px; left: 3px; top: 3px;
-    background: white; border-radius: 50%; transition: transform 0.2s;
-  }
-  .toggle input:checked + .toggle-slider { background: var(--blue); }
-  .toggle input:checked + .toggle-slider::before { transform: translateX(16px); }
-
-  /* Results panel */
-  .results-panel {
-    position: sticky;
-    top: 16px;
-    align-self: start;
-  }
-
-  .surplus-display {
-    background: var(--surface);
-    border-radius: 12px;
-    border: 0.5px solid var(--border-strong);
-    padding: 20px 18px;
-    margin-bottom: 14px;
-    text-align: center;
-  }
-  .surplus-label { font-size: 12px; color: var(--text3); margin-bottom: 6px; }
-  .surplus-amount { font-size: 42px; font-weight: 600; line-height: 1; margin-bottom: 4px; }
-  .surplus-monthly { font-size: 14px; color: var(--text2); }
-  .surplus-positive .surplus-amount { color: var(--blue); }
-  .surplus-negative .surplus-amount { color: var(--red); }
-  .surplus-tight .surplus-amount { color: var(--amber); }
-
-  .breakdown-card {
-    background: var(--surface);
-    border-radius: 12px;
-    border: 0.5px solid var(--border-strong);
-    padding: 14px 16px;
-    margin-bottom: 14px;
-  }
-  .breakdown-title { font-size: 12px; font-weight: 600; color: var(--text2); margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.04em; }
-
-  .brow { display: flex; align-items: center; justify-content: space-between; padding: 5px 0; border-bottom: 0.5px solid var(--border); gap: 8px; }
-  .brow:last-child { border-bottom: none; }
-  .brow-label { font-size: 13px; color: var(--text2); flex: 1; }
-  .brow-amount { font-size: 13px; font-weight: 500; text-align: right; min-width: 52px; }
-  .brow-pct { font-size: 11px; color: var(--text3); min-width: 36px; text-align: right; }
-
-  .pct-bar { height: 3px; background: var(--bg); border-radius: 2px; margin-top: 3px; overflow: hidden; }
-  .pct-bar-fill { height: 3px; border-radius: 2px; transition: width 0.25s; }
-
-  .flag-red { color: var(--red); }
-  .flag-amber { color: var(--amber); }
-  .flag-green { color: var(--green); }
-
-  .total-row { display: flex; justify-content: space-between; padding: 8px 0 0; border-top: 0.5px solid var(--border-strong); margin-top: 4px; font-weight: 600; font-size: 13px; }
-
-  .scenario-badge {
-    display: inline-block; padding: 3px 8px; border-radius: 4px; font-size: 11px; font-weight: 500; margin-left: 6px;
-  }
-  .badge-remote { background: var(--green-bg); color: var(--green); }
-  .badge-physio { background: var(--blue-bg); color: var(--blue); }
-
-  .divider { border: none; border-top: 0.5px solid var(--border); margin: 12px 0; }
-
-  .info-box { background: var(--amber-bg); border-radius: var(--radius); padding: 10px 12px; font-size: 12px; color: var(--amber); margin-bottom: 14px; line-height: 1.5; }
-  .info-box strong { font-weight: 600; }
-
-  .reset-btn {
-    width: 100%; padding: 8px; background: transparent; border: 0.5px solid var(--border-strong);
-    border-radius: var(--radius); font-size: 12px; color: var(--text2); cursor: pointer;
-    transition: background 0.1s;
-  }
-  .reset-btn:hover { background: var(--surface2); }
+  @media (max-width:440px) { .legend { grid-template-columns:1fr; } .budget-row { grid-template-columns:1fr; } .suffix { text-align:left; } }
 </style>
 </head>
 <body>
+<header><div class="header-inner"><h1>Property Budget Calculator</h1><span class="subtitle">Weekly household budget &amp; property affordability planner</span></div></header>
+<main>
+  <div class="tabs" role="tablist" aria-label="Budget calculator sections">
+    <button class="tab-btn" id="tab-overview-btn" role="tab" aria-controls="tab-overview" aria-selected="true">Overview</button>
+    <button class="tab-btn" id="tab-budget-btn" role="tab" aria-controls="tab-budget" aria-selected="false">Budget</button>
+  </div>
 
-<header>
-  <h1>Property Budget Calculator</h1>
-  <span>Household budget &amp; property affordability planner</span>
-</header>
-
-<div class="layout">
-  <div class="inputs-col">
-
-    <!-- Tabs -->
-    <div class="tabs">
-      <button class="tab-btn active" onclick="showTab('dashboard')">Dashboard</button>
-      <button class="tab-btn" onclick="showTab('income')">Housing details</button>
-      <button class="tab-btn" onclick="showTab('transport')">Transport details</button>
-      <button class="tab-btn" onclick="showTab('living')">Living costs</button>
-    </div>
-
-    <div id="tab-dashboard" class="tab-panel active">
-      <div class="dashboard-grid">
-        <div class="card"><div class="card-title">Income</div><div class="result-callout" id="incomeDashboard">$0</div></div>
+  <section id="tab-overview" class="tab-panel" role="tabpanel" aria-labelledby="tab-overview-btn">
+    <div class="overview-layout">
+      <div class="stack">
         <div class="card">
-          <div class="card-title">Housing</div>
-          <div class="result-callout" id="housingDashboard">$0 (target $0)</div>
+          <h2>Property scenario</h2>
+          <div class="scenario-grid">
+            <div class="field"><label for="purchasePrice">Purchase price</label><input id="purchasePrice" type="number" min="0" step="5000" value="880000"></div>
+            <div class="field"><label for="strata">Strata / quarter</label><input id="strata" type="number" min="0" step="10" value="1525.07"></div>
+            <div class="field"><label for="council">Council / quarter</label><input id="council" type="number" min="0" step="5" value="334.50"></div>
+            <div class="field"><label for="water">Water / quarter</label><input id="water" type="number" min="0" step="5" value="172.79"></div>
+          </div>
+          <div id="fundingStatus" class="status-banner status-good" aria-live="polite"></div>
         </div>
+
         <div class="card">
-          <div class="card-title">Transport</div>
-          <div class="result-callout" id="transportDashboard">$0 (target $0)</div>
+          <h2>Weekly P&amp;L</h2>
+          <div class="pnl">
+            <div class="metric"><div class="metric-label">Income</div><div class="metric-value" id="pnlIncome">$0</div><div class="metric-sub">per week</div></div>
+            <div class="metric"><div class="metric-label">Total outgoings</div><div class="metric-value" id="pnlSpend">$0</div><div class="metric-sub">including planned savings</div></div>
+            <div class="metric"><div class="metric-label">Surplus / deficit</div><div class="metric-value" id="pnlSurplus">$0</div><div class="metric-sub" id="pnlSurplusSub">$0 per month</div></div>
+          </div>
         </div>
+
         <div class="card">
-          <div class="card-title">Budget allocation</div>
-          <div class="pie-chart" id="pieChart" aria-label="Budget allocation overview"></div>
-          <div class="pie-legend" id="pieLegend"></div>
+          <h2>Weekly allocation</h2>
+          <div class="donut-wrap">
+            <div class="donut" id="donut" aria-label="Weekly spending allocation chart"><div class="donut-center"><strong id="donutTotal">$0</strong><span>weekly outgoings</span></div></div>
+            <div class="legend" id="legend"></div>
+          </div>
         </div>
       </div>
-      <div class="card" style="margin-top:14px"><div class="card-title">Target versus actual budget</div><div class="category-grid" id="dashboardCategories"></div></div>
+
+      <aside class="card side-card">
+        <div class="side-total">
+          <div class="label">Weekly surplus / deficit</div>
+          <div class="amount" id="sideSurplus">$0</div>
+          <div class="sub" id="sideMonthly">$0 per month</div>
+        </div>
+        <div class="breakdown">
+          <div class="row"><span>Housing</span><strong id="sideHousing">$0</strong></div>
+          <div class="row"><span>Housing %</span><strong id="sideHousingPct">0%</strong></div>
+          <div class="row"><span>Transport</span><strong id="sideTransport">$0</strong></div>
+          <div class="row"><span>Living</span><strong id="sideLiving">$0</strong></div>
+          <div class="row"><span>Planned savings</span><strong id="sideSavings">$0</strong></div>
+          <div class="row total"><span>Total outgoings</span><strong id="sideTotal">$0</strong></div>
+        </div>
+        <div class="breakdown" style="margin-top:18px">
+          <h2 style="margin-bottom:7px">Loan details</h2>
+          <div class="row"><span>Bank loan</span><strong id="loanDisplay">$0</strong></div>
+          <div class="row"><span>Monthly repayment</span><strong id="monthlyRepayment">$0</strong></div>
+          <div class="row"><span>Govt equity</span><strong id="govtShareDisplay">$0</strong></div>
+          <div class="row"><span>Cash contribution</span><strong id="cashDisplay">$0</strong></div>
+          <div class="row"><span>Loan cap</span><strong>$304,000</strong></div>
+        </div>
+      </aside>
     </div>
+  </section>
 
-    <!-- TAB 1: Housing details -->
-    <div id="tab-income" class="tab-panel">
-
-      <div class="card">
-        <div class="card-title">Net household income</div>
-        <div class="two-col"><div class="field"><label>Amount in hand</label><input type="number" id="incomeAmount" value="73848" step="100" oninput="calc()"></div><div class="field"><label>Income period</label><select id="incomePeriod" onchange="calc()"><option value="weekly">Weekly</option><option value="fortnightly">Fortnightly</option><option value="monthly">Monthly</option><option value="yearly" selected>Yearly</option></select></div></div>
-        <div class="hint" id="incomeWeeklyHint">$0 per week</div>
-      </div>
-
-      <div class="card">
-        <div class="card-title">Property and borrowing</div>
-        <div class="two-col">
-          <div class="field"><label>Purchase price ($)</label><input type="number" id="purchasePrice" value="880000" step="5000" oninput="calc()"></div>
-          <div class="field">
-            <label>Deposit ($)</label>
-            <input type="number" id="deposit" value="312000" step="5000" oninput="calc()">
-          </div>
-        </div>
-        <div class="three-col"><div class="field"><label>Strata/qtr ($)</label><input type="number" id="strata" value="1525.07" step="10" oninput="calc()"></div><div class="field"><label>Council/qtr ($)</label><input type="number" id="council" value="334.50" step="5" oninput="calc()"></div><div class="field"><label>Water/qtr ($)</label><input type="number" id="water" value="172.79" step="5" oninput="calc()"></div></div>
-        <div class="two-col"><div class="field"><label>Housing target (%)</label><input type="number" id="housingTarget" value="35" min="1" max="100" step="1" oninput="calc()"></div></div>
-      </div>
-
-      <div class="card">
-        <div class="card-title">Borrowing details</div>
-        <div class="two-col">
-          <div class="field">
-            <label>Property type</label>
-            <select id="propertyType" onchange="setEquityLimit(); calc()"><option value="established">Established (up to 30%)</option><option value="newBuild">New build (up to 40%)</option></select>
-          </div>
-          <div class="field">
-            <label>Interest rate (% p.a.)</label>
-            <input type="number" id="interestRate" value="6.13" step="0.05" oninput="calc()">
-          </div>
-        </div>
-        <div class="two-col"><div class="field"><label>Government equity (%)</label><div class="range-row"><input type="range" id="govtEquityRange" min="0" max="30" step="0.01" value="30.05" oninput="syncEquity(this.value)"><input type="number" id="govtEquity" value="30.05" step="0.01" oninput="syncEquity(this.value)"></div><div class="hint" id="equityHint">Maximum depends on property type</div></div><div class="field"><label>Loan term (years)</label><input type="number" id="loanTerm" value="30" step="1" min="1" oninput="calc()"></div></div>
-        <div class="field"><label>Loan amount</label><input type="number" id="loanAmount" value="304000" step="5000" oninput="calc()"><label class="check-row"><input type="checkbox" id="manualLoan" onchange="calc()"> Enter loan amount directly (otherwise calculated from price, deposit and equity)</label><div class="hint" id="loanLimitHint">Maximum loan: $304,000</div></div>
-        <div class="divider"></div><div class="two-col"><div class="field"><label>Calculate maximum price</label><label class="toggle"><input type="checkbox" id="showMaxPrice" onchange="calc()"><span class="toggle-slider"></span></label></div><div class="field"><div class="result-callout" id="maxPriceResult">Turn on maximum price to see the purchase price supported at your housing target.</div></div></div>
-      </div>
-
-    </div>
-
-    <!-- TAB 2: Transport & Work -->
-    <div id="tab-transport" class="tab-panel">
-
-      <div class="card">
-        <div class="card-title">Commute</div>
-        <div class="two-col">
-          <div class="field"><label>Distance one-way (km)</label><input type="number" id="distanceKm" value="40" step="1" oninput="calc()"></div>
-          <div class="field"><label>Expected tolls/week ($)</label><input type="number" id="weeklyTolls" value="60" min="0" step="1" oninput="calc()"></div>
-        </div>
-        <div class="field"><label>Fixed car costs/week</label><input type="number" id="c_carOwnership" value="68" step="5" oninput="calc()"><div class="hint">Insurance, rego/CTP, servicing, tyres and repairs. Excludes petrol and tolls.</div></div>
-        <div class="two-col">
-          <div class="field">
-            <label>Office days per week</label>
-            <input type="number" id="officeDays" value="5" step="1" min="0" max="5" oninput="calc()">
-          </div>
-        </div>
-        <div class="two-col">
-          <div class="field">
-            <label>Fuel efficiency (L/100km)</label>
-            <input type="number" id="fuelEff" value="10" step="0.5" oninput="calc()">
-          </div>
-          <div class="field">
-            <label>Petrol price ($/L)</label>
-            <input type="number" id="petrolPrice" value="2.08" step="0.01" oninput="calc()">
-            <div class="hint">~$1.92 now, est. ~$2.08 post-3 Aug excise</div>
-          </div>
-        </div>
-      </div>
-
-    </div>
-
-    <!-- TAB 3: Living Costs -->
-    <div id="tab-living" class="tab-panel">
-
-      <div class="card">
-        <div class="card-title">Living costs (weekly)</div>
-        <div class="field"><label>Weekly savings allocation</label><input type="number" id="savingsWeekly" value="0" min="0" step="10" oninput="calc()"></div>
-
-        <div class="two-col">
-          <div class="field">
-            <label>Groceries &amp; food</label>
-            <input type="number" id="c_groceries" value="280" step="5" oninput="calc()">
-          </div>
-          <div class="field">
-            <label>Takeaway &amp; dining</label>
-            <input type="number" id="c_dining" value="1.34" step="5" oninput="calc()">
-          </div>
-        </div>
-        <div class="two-col">
-          <div class="field">
-            <label>Medical &amp; pharmacy</label>
-            <input type="number" id="c_medical" value="127.50" step="5" oninput="calc()">
+  <section id="tab-budget" class="tab-panel" role="tabpanel" aria-labelledby="tab-budget-btn" hidden>
+    <div class="budget-grid">
+      <div class="stack">
+        <section class="budget-section">
+          <h2>Income &amp; finance</h2>
+          <div class="budget-list">
+            <div class="budget-row">
+              <div><div class="label-line"><label for="weeklyIncome">Income</label><button class="info-btn" type="button" aria-expanded="false" aria-label="About Income">i</button></div><div class="row-note">Reliable household net income</div>
+                <div class="info-popover" hidden><strong>Income</strong><br><span class="dim">Reliable net household income available each week. Keep speculative future income out until it is actually recurring.</span><br><br><strong>Current budget:</strong> <span data-budget-for="weeklyIncome"></span>/week.</div>
+              </div><div><div class="money-input"><input id="weeklyIncome" type="number" min="0" step="100" value="75200"></div><div class="suffix">per year</div></div>
             </div>
-          <div class="field">
-            <label>Care &amp; clothing</label>
-            <input type="number" id="c_clothing" value="64.09" step="5" oninput="calc()">
+            <div class="budget-row">
+              <div><div class="label-line"><label for="cashContribution">Cash</label><button class="info-btn" type="button" aria-expanded="false" aria-label="About Cash contribution">i</button></div><div class="row-note">Participant cash contribution to purchase</div>
+                <div class="info-popover" hidden><strong>Cash contribution</strong><br><span class="dim">The amount of your own cash used toward the property price. Purchase costs and retained emergency cash are outside this figure.</span><br><br><strong>Current budget:</strong> <span data-budget-for="cashContribution"></span>.</div>
+              </div><div><div class="money-input"><input id="cashContribution" type="number" min="0" step="5000" value="320000"></div></div>
+            </div>
+            <div class="budget-row">
+              <div><div class="label-line"><label for="savingsWeekly">Savings</label><button class="info-btn" type="button" aria-expanded="false" aria-label="About Savings">i</button></div><div class="row-note">Deliberate weekly saving after normal costs</div>
+                <div class="info-popover" hidden><strong>Savings</strong><br><span class="dim">Money deliberately left aside each week after normal expenses. This is separate from category reserves such as Gifts, Pets or Household.</span><br><br><strong>Current budget:</strong> <span data-budget-for="savingsWeekly"></span>/week.</div>
+              </div><div><div class="money-input"><input id="savingsWeekly" type="number" min="0" step="5" value="0"></div><div class="suffix">per week</div></div>
+            </div>
           </div>
-        </div>
-        <div class="two-col">
-          <div class="field">
-            <label>Pets</label>
-            <input type="number" id="c_pets" value="80" step="5" oninput="calc()">
+          <details class="advanced">
+            <summary>Finance assumptions</summary>
+            <div class="advanced-body">
+              <div class="mini-grid">
+                <div class="field"><label for="propertyType">Property type</label><select id="propertyType"><option value="established" selected>Established</option><option value="newBuild">New build</option></select><div class="hint">Government equity maximum changes with property type.</div></div>
+                <div class="field"><label for="govtEquity">Government equity (%)</label><input id="govtEquity" type="number" min="0" max="30" step="0.1" value="30"></div>
+                <div class="field"><label for="interestRate">Interest rate (% p.a.)</label><input id="interestRate" type="number" min="0" step="0.01" value="6.13"></div>
+                <div class="field"><label for="loanTerm">Loan term (years)</label><input id="loanTerm" type="number" min="1" max="40" step="1" value="30"></div>
+                <div class="field"><label for="housingTarget">Housing target (%)</label><input id="housingTarget" type="number" min="1" max="100" step="1" value="35"></div>
+              </div>
+              <div class="callout" id="maxPriceCallout">Maximum price at target: calculating…</div>
+            </div>
+          </details>
+        </section>
+
+        <section class="budget-section">
+          <h2>Transport</h2>
+          <div class="budget-list">
+            <div class="budget-row">
+              <div><div class="label-line"><label for="carOwnership">Car</label><button class="info-btn" type="button" aria-expanded="false" aria-label="About Car costs">i</button></div><div class="row-note">Fixed car ownership and maintenance</div>
+                <div class="info-popover" hidden><strong>Car</strong><br><span class="dim">Insurance, rego/CTP, servicing, tyres and repairs. Petrol and tolls are separate.</span><br><br><strong>Based on:</strong> the ongoing ownership costs of the Mazda.<br><strong>Current budget:</strong> <span data-budget-for="carOwnership"></span>/week.</div>
+              </div><div><div class="money-input"><input id="carOwnership" type="number" min="0" step="1" value="68"></div><div class="suffix">per week</div></div>
+            </div>
+            <div class="budget-row">
+              <div><div class="label-line"><label for="fuelWeekly">Fuel</label><button class="info-btn" type="button" aria-expanded="false" aria-label="About Fuel">i</button></div><div class="row-note">Conservative weekly fuel allowance</div>
+                <div class="info-popover" hidden><strong>Fuel</strong><br><span class="dim">A conservative allowance for regular driving rather than recalculating every listing.</span><br><br><strong>Based on:</strong> about 45 km each way to work, five days a week, 10 L/100 km, some local driving and one Sydney–Port Stephens return trip per year. The advanced calculator uses $2.50/L by default.<br><strong>Current budget:</strong> <span data-budget-for="fuelWeekly"></span>/week.</div>
+              </div><div><div class="money-input"><input id="fuelWeekly" type="number" min="0" step="1" value="120"></div><div class="suffix">per week</div></div>
+            </div>
+            <div class="budget-row">
+              <div><div class="label-line"><label for="tollsWeekly">Tolls</label><button class="info-btn" type="button" aria-expanded="false" aria-label="About Tolls">i</button></div><div class="row-note">Long-term conservative toll allowance</div>
+                <div class="info-popover" hidden><strong>Tolls</strong><br><span class="dim">Conservative weekly allowance using the $60 long-term cap rather than relying on temporary lower relief. It also leaves room for occasional longer trips.</span><br><br><strong>Current budget:</strong> <span data-budget-for="tollsWeekly"></span>/week.</div>
+              </div><div><div class="money-input"><input id="tollsWeekly" type="number" min="0" step="1" value="60"></div><div class="suffix">per week</div></div>
+            </div>
           </div>
-          <div class="field">
-            <label>Utilities &amp; connectivity</label>
-            <input type="number" id="c_utilities" value="84" step="5" oninput="calc()">
-          </div>
-        </div>
-        <div class="two-col">
-          <div class="field">
-            <label>Household &amp; shopping</label>
-            <input type="number" id="c_household" value="20" step="5" oninput="calc()">
-          </div>
-          <div class="field">
-            <label>Entertainment</label>
-            <input type="number" id="c_subs" value="14" step="5" oninput="calc()">
-          </div>
-        </div>
-        <div class="two-col">
-          <div class="field">
-            <label>Gifts &amp; family</label>
-            <input type="number" id="c_gifts" value="17.63" step="5" oninput="calc()">
-          </div>
-          <div class="field">
-            <label>Work/Education</label>
-            <input type="number" id="c_workCreative" value="32.32" step="5" oninput="calc()">
-            <div class="hint">Includes work tools and memberships.</div>
-          </div>
-        </div>
-        <div class="two-col">
-          <div class="field">
-            <label>IT</label>
-            <input type="number" id="c_it" value="12" step="5" oninput="calc()">
-          </div>
-          <div class="field">
-            <label>Donations</label>
-            <input type="number" id="c_giving" value="20" step="5" oninput="calc()">
-          </div>
-        </div>
+          <details class="advanced">
+            <summary>Optional fuel calculator</summary>
+            <div class="advanced-body">
+              <div class="switch-row"><span>Use calculated fuel instead of the fixed fuel allowance</span><input id="useCalculatedFuel" type="checkbox"></div>
+              <div class="mini-grid">
+                <div class="field"><label for="distanceKm">Commute one-way (km)</label><input id="distanceKm" type="number" min="0" step="1" value="45"></div>
+                <div class="field"><label>Office days</label><input type="number" value="5" disabled><div class="hint">Fixed at five days; no remote-work assumption.</div></div>
+                <div class="field"><label for="fuelEff">Fuel use (L/100 km)</label><input id="fuelEff" type="number" min="0" step="0.1" value="10"></div>
+                <div class="field"><label for="petrolPrice">Planning petrol price ($/L)</label><input id="petrolPrice" type="number" min="0" step="0.01" value="2.50"></div>
+                <div class="field"><label for="localKm">Other local driving (km/week)</label><input id="localKm" type="number" min="0" step="5" value="25"></div>
+                <div class="field"><label for="annualTripKm">Annual long-trip km</label><input id="annualTripKm" type="number" min="0" step="10" value="440"><div class="hint">Approximate annual Sydney–Port Stephens return allowance.</div></div>
+              </div>
+              <div class="callout" id="fuelCalcCallout">Calculated fuel: $0/week</div>
+            </div>
+          </details>
+        </section>
       </div>
 
-      <button class="reset-btn" onclick="resetLiving()">Reset to saved defaults</button>
-
+      <div class="stack">
+        <section class="budget-section living-costs">
+          <h2>Living costs</h2>
+          <div class="budget-list living-budget-list" id="livingBudgetList">
+            <div class="budget-row">
+              <div><div class="label-line"><label for="groceries">Groceries</label><button class="info-btn" type="button" aria-expanded="false" aria-label="About Groceries">i</button></div><div class="row-note">Food and everyday supermarket supplies</div>
+                <div class="info-popover" hidden><strong>Groceries</strong><br><span class="dim">Food for home plus ordinary supermarket household consumables.</span><br><br><strong>Based on:</strong> Feather &amp; Bone/local butcher, Rita’s Farm, Woolworths, Coles and Aldi.<br><strong>Planning basis:</strong> $100 meat + $65 fresh produce + $110 supermarkets + $25 buffer.<br><strong>Current budget:</strong> <span data-budget-for="groceries"></span>/week.</div>
+              </div><div><div class="money-input"><input id="groceries" type="number" min="0" step="5" value="300"></div><div class="suffix">per week</div></div>
+            </div>
+            <div class="budget-row">
+              <div><div class="label-line"><label for="takeaway">Takeaway</label><button class="info-btn" type="button" aria-expanded="false" aria-label="About Takeaway">i</button></div><div class="row-note">Takeaway, restaurants, cafés and food while out</div>
+                <div class="info-popover" hidden><strong>Takeaway</strong><br><span class="dim">Ready-to-eat food bought outside the grocery shop. Kept separate so discretionary food spending is easy to see.</span><br><br><strong>Based on:</strong> recent takeaway, cafés and occasional meals out.<br><strong>Current budget:</strong> <span data-budget-for="takeaway"></span>/week.</div>
+              </div><div><div class="money-input"><input id="takeaway" type="number" min="0" step="5" value="20"></div><div class="suffix">per week</div></div>
+            </div>
+            <div class="budget-row">
+              <div><div class="label-line"><label for="medical">Medical</label><button class="info-btn" type="button" aria-expanded="false" aria-label="About Medical">i</button></div><div class="row-note">Physio, pharmacy and other health costs</div>
+                <div class="info-popover" hidden><strong>Medical</strong><br><span class="dim">Physio, pharmacy, medication, supplements and other recurring health costs.</span><br><br><strong>Based on:</strong> keeping enough aside for one $145 physio appointment per month, with the remaining allowance available for pharmacy and other health costs.<br><strong>Current budget:</strong> <span data-budget-for="medical"></span>/week.</div>
+              </div><div><div class="money-input"><input id="medical" type="number" min="0" step="5" value="50"></div><div class="suffix">per week</div></div>
+            </div>
+            <div class="budget-row">
+              <div><div class="label-line"><label for="personal">Personal</label><button class="info-btn" type="button" aria-expanded="false" aria-label="About Personal">i</button></div><div class="row-note">Clothing and personal care</div>
+                <div class="info-popover" hidden><strong>Personal</strong><br><span class="dim">Clothes, shoes, haircuts/barber, skincare and other personal-care spending.</span><br><br><strong>Based on:</strong> actual clothing and personal-care purchases, smoothed into a weekly allowance.<br><strong>Current budget:</strong> <span data-budget-for="personal"></span>/week.</div>
+              </div><div><div class="money-input"><input id="personal" type="number" min="0" step="5" value="30"></div><div class="suffix">per week</div></div>
+            </div>
+            <div class="budget-row">
+              <div><div class="label-line"><label for="pets">Pets</label><button class="info-btn" type="button" aria-expanded="false" aria-label="About Pets">i</button></div><div class="row-note">Food, supplies, treatments and vet reserve</div>
+                <div class="info-popover" hidden><strong>Pets</strong><br><span class="dim">Food, supplies, flea/tick/worm treatment and a reserve for routine vet costs.</span><br><br><strong>Based on:</strong> Lyka, Pet Circle/other pet supplies and a vet buffer.<br><strong>Current budget:</strong> <span data-budget-for="pets"></span>/week.</div>
+              </div><div><div class="money-input"><input id="pets" type="number" min="0" step="5" value="80"></div><div class="suffix">per week</div></div>
+            </div>
+            <div class="budget-row">
+              <div><div class="label-line"><label for="energy">Energy</label><button class="info-btn" type="button" aria-expanded="false" aria-label="About Energy">i</button></div><div class="row-note">Electricity; gas too if the property has it</div>
+                <div class="info-popover" hidden><strong>Energy</strong><br><span class="dim">Electricity, plus gas only if the future property has a separate gas service.</span><br><br><strong>Based on:</strong> a future-property planning allowance rather than the unusually expensive current rental bills still being investigated.<br><strong>Current budget:</strong> <span data-budget-for="energy"></span>/week.</div>
+              </div><div><div class="money-input"><input id="energy" type="number" min="0" step="5" value="60"></div><div class="suffix">per week</div></div>
+            </div>
+            <div class="budget-row">
+              <div><div class="label-line"><label for="internet">Internet</label><button class="info-btn" type="button" aria-expanded="false" aria-label="About Internet">i</button></div><div class="row-note">Home ISP only</div>
+                <div class="info-popover" hidden><strong>Internet</strong><br><span class="dim">Home internet service only. Domains, hosting and online tools do not belong here.</span><br><br><strong>Based on:</strong> the current Aussie Broadband service or its future replacement.<br><strong>Current budget:</strong> <span data-budget-for="internet"></span>/week.</div>
+              </div><div><div class="money-input"><input id="internet" type="number" min="0" step="0.5" value="21.54"></div><div class="suffix">per week</div></div>
+            </div>
+            <div class="budget-row">
+              <div><div class="label-line"><label for="mobile">Mobile</label><button class="info-btn" type="button" aria-expanded="false" aria-label="About Mobile">i</button></div><div class="row-note">Mobile phone service only</div>
+                <div class="info-popover" hidden><strong>Mobile</strong><br><span class="dim">Mobile phone plan/service. Devices and accessories are not included.</span><br><br><strong>Based on:</strong> the current Amaysim plan or its replacement.<br><strong>Current budget:</strong> <span data-budget-for="mobile"></span>/week.</div>
+              </div><div><div class="money-input"><input id="mobile" type="number" min="0" step="0.5" value="4.62"></div><div class="suffix">per week</div></div>
+            </div>
+            <div class="budget-row">
+              <div><div class="label-line"><label for="household">Household</label><button class="info-btn" type="button" aria-expanded="false" aria-label="About Household">i</button></div><div class="row-note">Larger and occasional home purchases</div>
+                <div class="info-popover" hidden><strong>Household</strong><br><span class="dim">A reserve for appliances, furniture, cookware, home equipment and other bigger or lumpy household purchases.</span><br><br><strong>Excludes:</strong> detergent, bin liners, paper products and other supermarket consumables; those are Groceries.<br><strong>Current budget:</strong> <span data-budget-for="household"></span>/week.</div>
+              </div><div><div class="money-input"><input id="household" type="number" min="0" step="5" value="40"></div><div class="suffix">per week</div></div>
+            </div>
+            <div class="budget-row">
+              <div><div class="label-line"><label for="entertainment">Entertainment</label><button class="info-btn" type="button" aria-expanded="false" aria-label="About Entertainment">i</button></div><div class="row-note">Streaming, books, games and leisure</div>
+                <div class="info-popover" hidden><strong>Entertainment</strong><br><span class="dim">Streaming, books, games and similar leisure spending.</span><br><br><strong>Based on:</strong> recurring entertainment services plus room for occasional purchases, without treating a large one-off purchase as the weekly norm.<br><strong>Current budget:</strong> <span data-budget-for="entertainment"></span>/week.</div>
+              </div><div><div class="money-input"><input id="entertainment" type="number" min="0" step="1" value="12"></div><div class="suffix">per week</div></div>
+            </div>
+            <div class="budget-row">
+              <div><div class="label-line"><label for="gifts">Gifts</label><button class="info-btn" type="button" aria-expanded="false" aria-label="About Gifts">i</button></div><div class="row-note">Birthdays, Christmas and other occasions</div>
+                <div class="info-popover" hidden><strong>Gifts</strong><br><span class="dim">Birthdays, Christmas, Mother’s/Father’s Day, flowers, cards and other presents.</span><br><br><strong>Based on:</strong> a $1,000 annual gift budget spread across 52 weeks.<br><strong>Current budget:</strong> <span data-budget-for="gifts"></span>/week.</div>
+              </div><div><div class="money-input"><input id="gifts" type="number" min="0" step="0.01" value="19.23"></div><div class="suffix">per week</div></div>
+            </div>
+            <div class="budget-row">
+              <div><div class="label-line"><label for="career">Career</label><button class="info-btn" type="button" aria-expanded="false" aria-label="About Career">i</button></div><div class="row-note">Career tools, courses and training</div>
+                <div class="info-popover" hidden><strong>Career</strong><br><span class="dim">Career development, training and professional tools.</span><br><br><strong>Based on:</strong> Workflowy while primarily work-related, courses/training for either of you, Vanessa’s creative study and professional memberships. Fast Company is no longer included.<br><strong>Current budget:</strong> <span data-budget-for="career"></span>/week.</div>
+              </div><div><div class="money-input"><input id="career" type="number" min="0" step="1" value="14"></div><div class="suffix">per week</div></div>
+            </div>
+            <div class="budget-row">
+              <div><div class="label-line"><label for="ai">AI</label><button class="info-btn" type="button" aria-expanded="false" aria-label="About AI">i</button></div><div class="row-note">Paid AI subscriptions and usage</div>
+                <div class="info-popover" hidden><strong>AI</strong><br><span class="dim">Paid AI tools and usage, separated so changing providers or API usage is easy to see.</span><br><br><strong>Based on:</strong> ChatGPT, Claude, OpenAI API and other paid AI tools/services or AI-powered formulas.<br><strong>Current budget:</strong> <span data-budget-for="ai"></span>/week.</div>
+              </div><div><div class="money-input"><input id="ai" type="number" min="0" step="1" value="20"></div><div class="suffix">per week</div></div>
+            </div>
+            <div class="budget-row">
+              <div><div class="label-line"><label for="donations">Donations</label><button class="info-btn" type="button" aria-expanded="false" aria-label="About Donations">i</button></div><div class="row-note">Church and charitable giving</div>
+                <div class="info-popover" hidden><strong>Donations</strong><br><span class="dim">Church giving, charities and other regular donations. Kept separate from Gifts.</span><br><br><strong>Based on:</strong> $10/week church + $10/week other giving.<br><strong>Current budget:</strong> <span data-budget-for="donations"></span>/week.</div>
+              </div><div><div class="money-input"><input id="donations" type="number" min="0" step="5" value="20"></div><div class="suffix">per week</div></div>
+            </div>
+          </div>
+        </section>
+      </div>
     </div>
 
-  </div>
-
-  <!-- Results panel -->
-  <div class="results-col">
-    <div class="results-panel">
-
-      <div class="surplus-display" id="surplusDisplay">
-        <div class="surplus-label">Weekly surplus / deficit</div>
-        <div class="surplus-amount" id="surplusAmount">$0</div>
-        <div class="surplus-monthly" id="surplusMonthly">$0 per month</div>
-      </div>
-
-      <div class="breakdown-card">
-        <div class="breakdown-title">Mortgage, property costs + tolls</div>
-        <div class="brow"><span class="brow-label">Mortgage</span><span class="brow-amount" id="r_summary_mortgage">$0</span></div>
-        <div class="brow"><span class="brow-label">Strata + council rates</span><span class="brow-amount" id="r_summary_rates">$0</span></div>
-        <div class="brow"><span class="brow-label">Water</span><span class="brow-amount" id="r_summary_water">$0</span></div>
-        <div class="brow"><span class="brow-label">Tolls</span><span class="brow-amount" id="r_summary_tolls">$0</span></div>
-        <div class="total-row"><span>Total per week</span><span id="r_summary_total">$0</span></div>
-        <div class="brow-pct" style="width:100%; margin-top:6px" id="r_summary_pct">0% of weekly income</div>
-      </div>
-
-      <div class="breakdown-card">
-        <div class="breakdown-title">Weekly breakdown</div>
-
-        <div class="brow">
-          <div style="flex:1">
-            <div class="brow-label">Income</div>
-          </div>
-          <div class="brow-amount flag-green" id="r_income">$0</div>
-          <div class="brow-pct" id="r_income_pct">100%</div>
-        </div>
-
-        <div class="brow">
-          <div style="flex:1">
-            <div class="brow-label">Petrol</div>
-            <div class="pct-bar"><div class="pct-bar-fill" id="bar_transport" style="background:#1D9E75"></div></div>
-          </div>
-          <div class="brow-amount" id="r_transport">$0</div>
-          <div class="brow-pct" id="r_transport_pct">0%</div>
-        </div>
-
-        <div class="brow">
-          <div style="flex:1">
-            <div class="brow-label">Food</div>
-            <div class="pct-bar"><div class="pct-bar-fill" id="bar_food" style="background:#EF9F27"></div></div>
-          </div>
-          <div class="brow-amount" id="r_food">$0</div>
-          <div class="brow-pct" id="r_food_pct">0%</div>
-        </div>
-
-        <div class="brow">
-          <div style="flex:1">
-            <div class="brow-label">Medical</div>
-            <div class="pct-bar"><div class="pct-bar-fill" id="bar_medical" style="background:#E24B4A"></div></div>
-          </div>
-          <div class="brow-amount" id="r_medical">$0</div>
-          <div class="brow-pct" id="r_medical_pct">0%</div>
-        </div>
-
-        <div class="brow">
-          <div style="flex:1">
-            <div class="brow-label">Personal &amp; home</div>
-            <div class="pct-bar"><div class="pct-bar-fill" id="bar_personal" style="background:#7F77DD"></div></div>
-          </div>
-          <div class="brow-amount" id="r_personal">$0</div>
-          <div class="brow-pct" id="r_personal_pct">0%</div>
-        </div>
-
-        <div class="total-row"><span>Subtotal excluding property costs + tolls</span><span id="r_breakdown_total">$0</span></div>
-        <div class="total-row"><span>Total spending</span><span id="r_total">$0</span></div>
-      </div>
-
-      <div class="breakdown-card">
-        <div class="breakdown-title">Loan details</div>
-        <div class="brow">
-          <span class="brow-label">Loan amount</span>
-          <span class="brow-amount" id="r_loan">$0</span>
-        </div>
-        <div class="brow">
-          <span class="brow-label">Monthly repayment</span>
-          <span class="brow-amount" id="r_monthly_mort">$0</span>
-        </div>
-        <div class="brow">
-          <span class="brow-label">Govt equity share</span>
-          <span class="brow-amount" id="r_govtShare">$0</span>
-        </div>
-        <div class="brow">
-          <span class="brow-label">Housing % of income</span>
-          <span class="brow-amount" id="r_housing_pct">0%</span>
-        </div>
-      </div>
-
+    <div class="btn-row">
+      <button class="btn primary" id="saveDefaults" type="button">Save current values</button>
+      <button class="btn" id="resetDefaults" type="button">Reset to built-in defaults</button>
     </div>
-  </div>
-</div>
-
+    <div class="footer-note">Saved values stay in this browser only. The built-in defaults remain in the site code and can always be restored.</div>
+  </section>
+</main>
 <script>
-const DEFAULTS = {
-  incomeAmount: 73848, incomePeriod: 'yearly', savingsWeekly: 0,
-  purchasePrice: 880000, deposit: 312000, govtEquity: 30, propertyType: 'established', loanAmount: 304000, manualLoan: false,
-  interestRate: 6.13, loanTerm: 30,
-  strata: 1525.07, council: 334.50, water: 172.79,
-  distanceKm: 40, weeklyTolls: 60, officeDays: 5, fuelEff: 10, petrolPrice: 2.08,
-  c_groceries: 280, c_dining: 1.34, c_medical: 127.50, c_clothing: 64.09,
-  c_pets: 80, c_utilities: 84, c_household: 20, c_subs: 14,
-  c_gifts: 17.63, c_carOwnership: 68, c_workCreative: 32.32, c_it: 12, c_giving: 20
-};
+(() => {
+  'use strict';
+  const MAX_LOAN = 304000;
+  const STORAGE_KEY = 'propertyBudgetCalculator.v2';
+  const COLORS = ['#2a78d6','#1d9e75','#ef9f27','#e24b4a','#7f77dd','#d85a30','#639922','#ba7517','#378add','#d4537e'];
+  const periodicIds = [
+    'weeklyIncome','savingsWeekly','carOwnership','fuelWeekly','tollsWeekly',
+    'groceries','takeaway','medical','personal','pets','energy','internet','mobile','household','entertainment','gifts','career','ai','donations'
+  ];
+  const periodOptions = [
+    ['weekly','Weekly'],['fortnightly','Fortnightly'],['monthly','Monthly'],['quarterly','Quarterly'],['annually','Annually']
+  ];
+  const defaultPeriods = { weeklyIncome:'annually' };
+  const weeklyFactors = { weekly:1, fortnightly:1/2, monthly:12/52, quarterly:4/52, annually:1/52 };
+  const ids = [
+    'purchasePrice','strata','council','water','weeklyIncome','cashContribution','savingsWeekly','propertyType','govtEquity','interestRate','loanTerm','housingTarget',
+    'carOwnership','fuelWeekly','tollsWeekly','useCalculatedFuel','distanceKm','fuelEff','petrolPrice','localKm','annualTripKm',
+    'groceries','takeaway','medical','personal','pets','energy','internet','mobile','household','entertainment','gifts','career','ai','donations'
+  ].concat(periodicIds.map(id => id + 'Period'));
+  const livingIds = ['groceries','takeaway','medical','personal','pets','energy','internet','mobile','household','entertainment','gifts','career','ai','donations'];
+  const $ = id => document.getElementById(id);
+  const num = id => Math.max(0, Number.parseFloat($(id)?.value) || 0);
+  const weeklyNum = id => num(id) * (weeklyFactors[$(id + 'Period')?.value] || 1);
+  const money = n => new Intl.NumberFormat('en-AU',{style:'currency',currency:'AUD',maximumFractionDigits:0}).format(Number.isFinite(n) ? n : 0);
+  const money2 = n => new Intl.NumberFormat('en-AU',{style:'currency',currency:'AUD',minimumFractionDigits:2,maximumFractionDigits:2}).format(Number.isFinite(n) ? n : 0);
+  const signedMoney = n => (n < 0 ? '-' : '+') + money(Math.abs(n));
+  const pct = n => (Number.isFinite(n) ? n : 0).toFixed(1) + '%';
 
-const MAX_LOAN = 304000;
+  function addPeriodControls() {
+    periodicIds.forEach(id => {
+      const input = $(id);
+      const control = input?.closest('.budget-row')?.lastElementChild;
+      if (!input || !control || $(id + 'Period')) return;
+      control.classList.add('amount-control');
+      const select = document.createElement('select');
+      select.id = id + 'Period';
+      select.className = 'period-select';
+      select.setAttribute('aria-label', input.closest('.budget-row').querySelector('label')?.textContent + ' payment frequency');
+      select.innerHTML = periodOptions.map(([value,label]) => '<option value="' + value + '">' + label + '</option>').join('');
+      select.value = defaultPeriods[id] || 'weekly';
+      select.dataset.previous = select.value;
+      control.querySelector('.money-input').after(select);
+      const suffix = control.querySelector('.suffix');
+      if (suffix) suffix.textContent = 'equals ' + money2(weeklyNum(id)) + ' per week';
+    });
+  }
 
-const CATEGORY_TARGETS = {
-  Housing: 0.35, Transport: 0.15, 'Groceries & household': 0.10, 'Medical & pharmacy': 0.05,
-  Pets: 0.03, Utilities: 0.05, 'Care & clothing': 0.04, 'Gifts & family': 0.03,
-  Donations: 0.02, Entertainment: 0.01, 'Work/Education': 0.05, IT: 0.02, Savings: 0.10
-};
+  addPeriodControls();
 
-function v(id) {
-  const el = document.getElementById(id);
-  if (!el) return 0;
-  if (el.type === 'checkbox') return el.checked;
-  if (el.tagName === 'SELECT') return el.value;
-  return parseFloat(el.value) || 0;
-}
-
-function fmt(n) { return '$' + Math.round(Math.abs(n)).toLocaleString(); }
-function fmtd(n) { return (n < 0 ? '-$' : '$') + Math.round(Math.abs(n)).toLocaleString(); }
-function pct(n, total) { return total > 0 ? (n / total * 100).toFixed(1) + '%' : '0%'; }
-function pctNum(n, total) { return total > 0 ? n / total * 100 : 0; }
-function equityMaximum() { return v('propertyType') === 'newBuild' ? 40 : 30; }
-function setEquityLimit() { const max = equityMaximum(), range = document.getElementById('govtEquityRange'), input = document.getElementById('govtEquity'); range.max = max; const value = Math.min(parseFloat(input.value) || 0, max); range.value = value; input.value = value; document.getElementById('equityHint').textContent = 'Maximum: ' + max + '% for this property type'; }
-function syncEquity(value) { const safe = Math.max(0, Math.min(parseFloat(value) || 0, equityMaximum())); document.getElementById('govtEquity').value = safe; document.getElementById('govtEquityRange').value = safe; calc(); }
-
-function weeklyIncomeFromInput() {
-  const amount = v('incomeAmount');
-  const period = v('incomePeriod');
-  const annual = period === 'weekly' ? amount * 52 : period === 'fortnightly' ? amount * 26 : period === 'monthly' ? amount * 12 : amount;
-  return annual / 52;
-}
-
-function renderDashboard(data, weeklyIncome) {
-  const target = document.getElementById('dashboardCategories');
-  if (!target) return;
-  const colors = ['#2a78d6', '#1D9E75', '#EF9F27', '#E24B4A', '#7F77DD', '#D85A30', '#639922', '#BA7517', '#378ADD', '#AFA9EC', '#5DCAA5', '#888780', '#D4537E'];
-  const total = Object.values(data).reduce((sum, value) => sum + value, 0);
-  let start = 0;
-  const segments = Object.entries(data).map(([name, actual], index) => {
-    const end = start + (total > 0 ? actual / total * 100 : 0);
-    const segment = colors[index % colors.length] + ' ' + start + '% ' + end + '%';
-    start = end;
-    return { name, actual, color: colors[index % colors.length], segment };
+  const builtIns = {};
+  ids.forEach(id => {
+    const el = $(id);
+    if (!el) return;
+    builtIns[id] = el.type === 'checkbox' ? el.checked : el.value;
   });
-  const pie = document.getElementById('pieChart');
-  if (pie) pie.style.background = 'conic-gradient(' + segments.map(item => item.segment).join(', ') + ')';
-  const legend = document.getElementById('pieLegend');
-  if (legend) legend.innerHTML = segments.map(item => '<div class="legend-item"><span class="legend-swatch" style="background:' + item.color + '"></span><span>' + item.name + ' ' + pct(item.actual, weeklyIncome) + ' (' + ((CATEGORY_TARGETS[item.name] || 0) * 100).toFixed(0) + '%)</span></div>').join('');
-  target.innerHTML = Object.entries(data).map(([name, actual]) => {
-    const targetPct = CATEGORY_TARGETS[name] || 0;
-    const targetAmount = weeklyIncome * targetPct;
-    const actualPct = pctNum(actual, weeklyIncome);
-    const width = targetAmount > 0 ? Math.min(actual / targetAmount * 100, 100) : 0;
-    const delta = actual - targetAmount;
-    const isSavings = name === 'Savings';
-    const favourable = isSavings ? delta >= 0 : delta <= 0;
-    return '<div class="category-card ' + (favourable ? '' : 'category-over') + '"><div class="category-name">' + name + ' ' + actualPct.toFixed(1) + '% (' + (targetPct * 100).toFixed(0) + '%)</div><div class="category-values"><span>Actual <strong>' + fmt(actual) + '</strong></span><span>Target ' + fmt(targetAmount) + '</span></div><div class="category-bar"><div class="category-bar-fill" style="width:' + width + '%"></div></div><div class="hint ' + (favourable ? 'status-good' : 'status-bad') + '">' + (delta >= 0 ? '+' : '') + fmtd(delta) + ' versus target</div></div>';
-  }).join('');
-}
 
-function calc() {
-  // Income
-  const weeklyIncome = weeklyIncomeFromInput();
-  const incomeHint = document.getElementById('incomeWeeklyHint');
-  if (incomeHint) incomeHint.textContent = fmt(weeklyIncome) + ' per week';
-
-  // Mortgage
-  const price = v('purchasePrice');
-  const deposit = v('deposit');
-  const govtPct = Math.min(v('govtEquity'), equityMaximum()) / 100;
-  const govtShare = price * govtPct;
-  const calculatedLoan = Math.max(0, price - deposit - govtShare);
-  const requiredDeposit = Math.max(0, price - govtShare - MAX_LOAN);
-  const manualLoan = document.getElementById('manualLoan').checked;
-  const loan = manualLoan ? Math.min(Math.max(0, v('loanAmount')), MAX_LOAN) : Math.min(calculatedLoan, MAX_LOAN);
-  if (!manualLoan) document.getElementById('loanAmount').value = Math.round(loan);
-  if (manualLoan && v('loanAmount') > MAX_LOAN) document.getElementById('loanAmount').value = MAX_LOAN;
-  const loanLimitHint = document.getElementById('loanLimitHint');
-  if (loanLimitHint) loanLimitHint.textContent = deposit < requiredDeposit ? 'Maximum loan: $304,000. Minimum deposit for this price/equity: ' + fmt(requiredDeposit) : 'Maximum loan: $304,000. Required deposit at the cap: ' + fmt(requiredDeposit);
-  const rate = v('interestRate') / 100 / 12;
-  const months = v('loanTerm') * 12;
-  let monthlyMort = 0;
-  if (rate > 0 && months > 0 && loan > 0) {
-    monthlyMort = loan * (rate * Math.pow(1 + rate, months)) / (Math.pow(1 + rate, months) - 1);
+  function setTab(name) {
+    ['overview','budget'].forEach(tab => {
+      const active = tab === name;
+      $('tab-' + tab + '-btn').setAttribute('aria-selected', String(active));
+      $('tab-' + tab).hidden = !active;
+    });
   }
-  const weeklyMort = monthlyMort * 12 / 52;
 
-  // Outgoings
-  const strataWeekly = v('strata') * 4 / 52;
-  const ratesWeekly = v('council') * 4 / 52;
-  const waterWeekly = v('water') * 4 / 52;
-  const outgoingsWeekly = strataWeekly + ratesWeekly + waterWeekly;
-
-  // Transport
-  const days = v('officeDays');
-  const dist = v('distanceKm');
-  const litresPerDay = (dist * 2 / 100) * v('fuelEff');
-  const petrolWeekly = litresPerDay * v('petrolPrice') * days;
-  const tollsWeekly = v('weeklyTolls');
-  const transportWeekly = petrolWeekly + tollsWeekly;
-  const netTollsWeekly = tollsWeekly;
-
-  // Living costs
-  const medical = v('c_medical');
-  const food = v('c_groceries') + v('c_dining');
-  const personal = v('c_clothing') + v('c_pets') + v('c_utilities') + v('c_household') +
-    v('c_subs') + v('c_gifts') + v('c_carOwnership') + v('c_workCreative') + v('c_it') + v('c_giving');
-  const livingTotal = food + medical + personal;
-
-  // Totals
-  const housingTotal = weeklyMort + outgoingsWeekly;
-  const totalSpend = housingTotal + transportWeekly + livingTotal;
-  const surplus = weeklyIncome - totalSpend;
-  const surplusMonthly = surplus * 52 / 12;
-  const summaryTotal = weeklyMort + outgoingsWeekly + netTollsWeekly;
-  const breakdownTotal = petrolWeekly + livingTotal;
-  const housingTargetHint = document.getElementById('housingTargetHint');
-  if (housingTargetHint) housingTargetHint.textContent = 'Target: ' + fmt(weeklyIncome * v('housingTarget') / 100) + '/week';
-  const fixedTransport = v('c_carOwnership');
-  const transportActual = transportWeekly + fixedTransport;
-  const incomeDashboard = document.getElementById('incomeDashboard');
-  if (incomeDashboard) incomeDashboard.textContent = fmt(weeklyIncome);
-  const housingDashboard = document.getElementById('housingDashboard');
-  if (housingDashboard) { const housingTargetAmount = weeklyIncome * v('housingTarget') / 100; housingDashboard.textContent = fmt(housingTotal) + ' (target ' + fmt(housingTargetAmount) + ')'; housingDashboard.className = 'result-callout ' + (housingTotal > housingTargetAmount ? 'summary-over' : 'summary-good'); }
-  const transportDashboard = document.getElementById('transportDashboard');
-  if (transportDashboard) { const transportTargetAmount = weeklyIncome * CATEGORY_TARGETS.Transport; transportDashboard.textContent = fmt(transportActual) + ' (target ' + fmt(transportTargetAmount) + ')'; transportDashboard.className = 'result-callout ' + (transportActual > transportTargetAmount ? 'summary-over' : 'summary-good'); }
-  const maxEl = document.getElementById('maxPriceResult');
-  if (document.getElementById('showMaxPrice').checked) { const targetWeeklyMortgage = weeklyIncome * v('housingTarget') / 100 - outgoingsWeekly; const targetMonthlyMortgage = targetWeeklyMortgage * 52 / 12; const pv = rate > 0 && targetMonthlyMortgage > 0 ? targetMonthlyMortgage * (1 - Math.pow(1 + rate, -months)) / rate : 0; const maxPrice = pv > 0 ? (pv + deposit) / (1 - govtPct) : 0; maxEl.textContent = maxPrice > 0 ? 'Estimated maximum purchase price: ' + fmtd(maxPrice) + ' at ' + v('housingTarget') + '% housing costs' : 'The target leaves no room for mortgage repayments after property outgoings.'; } else maxEl.textContent = 'Turn on maximum price to see the purchase price supported at your housing target.';
-
-  // Update surplus display
-  const sd = document.getElementById('surplusDisplay');
-  sd.className = 'surplus-display ' + (surplus > 50 ? 'surplus-positive' : surplus < 0 ? 'surplus-negative' : 'surplus-tight');
-  document.getElementById('surplusAmount').textContent = fmtd(surplus) + '/wk';
-  document.getElementById('surplusMonthly').textContent = fmtd(surplusMonthly) + ' per month';
-
-  // Breakdown
-  const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
-  const setBar = (id, pctVal) => {
-    const el = document.getElementById(id);
-    if (el) el.style.width = Math.min(pctVal, 100) + '%';
-  };
-
-  set('r_summary_mortgage', fmt(weeklyMort));
-  set('r_summary_rates', fmt(strataWeekly + ratesWeekly));
-  set('r_summary_water', fmt(waterWeekly));
-  set('r_summary_tolls', fmt(netTollsWeekly));
-  set('r_summary_total', fmt(summaryTotal));
-  set('r_summary_pct', pct(summaryTotal, weeklyIncome) + ' of weekly income');
-  renderDashboard({
-    Housing: housingTotal,
-    Transport: transportActual,
-    'Groceries & household': food + v('c_household'),
-    'Medical & pharmacy': medical,
-    Pets: v('c_pets'),
-    Utilities: v('c_utilities'),
-    'Care & clothing': v('c_clothing'),
-    'Gifts & family': v('c_gifts'),
-    Donations: v('c_giving'),
-    Entertainment: v('c_subs'),
-    'Work/Education': v('c_workCreative'),
-    IT: v('c_it'),
-    Savings: v('savingsWeekly')
-  }, weeklyIncome);
-
-  set('r_income', fmt(weeklyIncome));
-  set('r_income_pct', '100%');
-
-  set('r_transport', fmt(petrolWeekly));
-  set('r_transport_pct', pct(petrolWeekly, weeklyIncome));
-  setBar('bar_transport', pctNum(petrolWeekly, weeklyIncome));
-
-  set('r_food', fmt(food));
-  set('r_food_pct', pct(food, weeklyIncome));
-  setBar('bar_food', pctNum(food, weeklyIncome));
-
-  set('r_medical', fmt(medical));
-  const medEl = document.getElementById('r_medical_pct');
-  if (medEl) {
-    const medPct = pctNum(medical, weeklyIncome);
-    medEl.textContent = pct(medical, weeklyIncome);
-    medEl.className = 'brow-pct ' + (medPct > 10 ? 'flag-red' : medPct > 7 ? 'flag-amber' : '');
+  function clampEquity() {
+    const max = $('propertyType').value === 'newBuild' ? 40 : 30;
+    $('govtEquity').max = String(max);
+    if (num('govtEquity') > max) $('govtEquity').value = String(max);
+    return max;
   }
-  setBar('bar_medical', pctNum(medical, weeklyIncome));
 
-  set('r_personal', fmt(personal));
-  set('r_personal_pct', pct(personal, weeklyIncome));
-  setBar('bar_personal', pctNum(personal, weeklyIncome));
-
-  set('r_breakdown_total', fmt(breakdownTotal));
-  set('r_total', fmt(totalSpend));
-
-  // Loan details
-  set('r_loan', fmt(loan));
-  set('r_monthly_mort', fmt(monthlyMort) + '/mo');
-  set('r_govtShare', fmt(govtShare));
-  const hpct = pctNum(housingTotal, weeklyIncome);
-  const hpctEl = document.getElementById('r_housing_pct');
-  if (hpctEl) {
-    hpctEl.textContent = hpct.toFixed(1) + '%';
-    hpctEl.className = 'brow-amount ' + (hpct > 38 ? 'flag-red' : hpct > 32 ? 'flag-amber' : 'flag-green');
+  function mortgagePayment(loan) {
+    const months = Math.max(1, Math.round(num('loanTerm') * 12));
+    const monthlyRate = num('interestRate') / 100 / 12;
+    if (loan <= 0) return 0;
+    if (monthlyRate === 0) return loan / months;
+    const factor = Math.pow(1 + monthlyRate, months);
+    return loan * (monthlyRate * factor) / (factor - 1);
   }
-}
 
-function showTab(name) {
-  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-  document.getElementById('tab-' + name).classList.add('active');
-  event.target.classList.add('active');
-}
+  function pvFromMonthlyPayment(payment) {
+    const months = Math.max(1, Math.round(num('loanTerm') * 12));
+    const monthlyRate = num('interestRate') / 100 / 12;
+    if (payment <= 0) return 0;
+    if (monthlyRate === 0) return payment * months;
+    return payment * (1 - Math.pow(1 + monthlyRate, -months)) / monthlyRate;
+  }
 
-function resetLiving() {
-  const cats = ['groceries','dining','medical','clothing','pets','utilities','household','subs','gifts','carOwnership','workCreative','it','giving'];
-  cats.forEach(c => {
-    const el = document.getElementById('c_' + c);
-    if (el) el.value = DEFAULTS['c_' + c];
+  function calculatedFuel() {
+    const weeklyKm = num('distanceKm') * 2 * 5 + num('localKm') + num('annualTripKm') / 52;
+    return weeklyKm * num('fuelEff') / 100 * num('petrolPrice');
+  }
+
+  function weeklyLiving() { return livingIds.reduce((sum,id) => sum + weeklyNum(id), 0); }
+
+  function updateBudgetLabels() {
+    document.querySelectorAll('[data-budget-for]').forEach(node => {
+      const id = node.getAttribute('data-budget-for');
+      node.textContent = money2(periodicIds.includes(id) ? weeklyNum(id) : num(id));
+    });
+    periodicIds.forEach(id => {
+      const suffix = $(id)?.closest('.budget-row')?.querySelector('.suffix');
+      if (suffix) suffix.textContent = 'equals ' + money2(weeklyNum(id)) + ' per week';
+    });
+  }
+
+  function calc() {
+    const equityMax = clampEquity();
+    const income = weeklyNum('weeklyIncome');
+    const price = num('purchasePrice');
+    const cash = num('cashContribution');
+    const equityPct = Math.min(num('govtEquity'), equityMax) / 100;
+    const govtShare = price * equityPct;
+    const requiredLoan = Math.max(0, price - cash - govtShare);
+    const bankLoan = Math.min(requiredLoan, MAX_LOAN);
+    const shortfall = Math.max(0, requiredLoan - MAX_LOAN);
+    const excessCash = Math.max(0, cash + govtShare - price);
+    const monthlyMortgage = mortgagePayment(bankLoan);
+    const weeklyMortgage = monthlyMortgage * 12 / 52;
+
+    const strataWeekly = num('strata') * 4 / 52;
+    const councilWeekly = num('council') * 4 / 52;
+    const waterWeekly = num('water') * 4 / 52;
+    const housing = weeklyMortgage + strataWeekly + councilWeekly + waterWeekly;
+    const housingPct = income > 0 ? housing / income * 100 : 0;
+
+    const fuelCalc = calculatedFuel();
+    const fuel = $('useCalculatedFuel').checked ? fuelCalc : weeklyNum('fuelWeekly');
+    const transport = weeklyNum('carOwnership') + fuel + weeklyNum('tollsWeekly');
+    const living = weeklyLiving();
+    const savings = weeklyNum('savingsWeekly');
+    const total = housing + transport + living + savings;
+    const surplus = income - total;
+    const monthlySurplus = surplus * 52 / 12;
+
+    $('fuelCalcCallout').textContent = 'Calculated fuel: ' + money2(fuelCalc) + '/week. ' + ($('useCalculatedFuel').checked ? 'This is currently being used.' : 'The fixed fuel allowance is currently being used.');
+
+    const targetWeeklyHousing = income * num('housingTarget') / 100;
+    const targetWeeklyMortgage = Math.max(0, targetWeeklyHousing - strataWeekly - councilWeekly - waterWeekly);
+    const affordableMonthlyMortgage = targetWeeklyMortgage * 52 / 12;
+    const housingLoan = Math.min(MAX_LOAN, Math.max(0, pvFromMonthlyPayment(affordableMonthlyMortgage)));
+    const denom = 1 - equityPct;
+    const maxPrice = denom > 0 ? (housingLoan + cash) / denom : 0;
+    $('maxPriceCallout').textContent = maxPrice > 0
+      ? 'Estimated maximum purchase price at the ' + num('housingTarget').toFixed(0) + '% housing target: ' + money(maxPrice) + '. Loan used in this estimate is capped at ' + money(MAX_LOAN) + '.'
+      : 'The housing target leaves no room for a mortgage after strata, council and water.';
+
+    const status = $('fundingStatus');
+    if (shortfall > 0) {
+      status.className = 'status-banner status-bad';
+      status.innerHTML = '<strong>Funding shortfall: ' + money(shortfall) + '.</strong> This scenario requires a ' + money(requiredLoan) + ' bank loan, above the ' + money(MAX_LOAN) + ' maximum. Weekly repayments below are shown at the loan cap, but the property is not fully funded.';
+    } else if (excessCash > 0) {
+      status.className = 'status-banner status-warn';
+      status.innerHTML = '<strong>Cash contribution exceeds the amount required by ' + money(excessCash) + '.</strong> Reduce the cash contribution or government equity assumption for a realistic scenario.';
+    } else {
+      status.className = 'status-banner status-good';
+      status.innerHTML = '<strong>Funding fits the loan cap.</strong> Required bank loan: ' + money(bankLoan) + ' of ' + money(MAX_LOAN) + ' maximum.';
+    }
+
+    $('pnlIncome').textContent = money(income);
+    $('pnlSpend').textContent = money(total);
+    $('pnlSurplus').textContent = signedMoney(surplus) + '/wk';
+    $('pnlSurplus').className = 'metric-value ' + (surplus >= 75 ? 'good' : surplus < 0 ? 'bad' : 'warn');
+    $('pnlSurplusSub').textContent = signedMoney(monthlySurplus) + ' per month';
+    $('sideSurplus').textContent = signedMoney(surplus) + '/wk';
+    $('sideSurplus').style.color = surplus >= 75 ? 'var(--good)' : surplus < 0 ? 'var(--bad)' : 'var(--warn)';
+    $('sideMonthly').textContent = signedMoney(monthlySurplus) + ' per month';
+    $('sideHousing').textContent = money(housing) + '/wk';
+    $('sideHousingPct').textContent = pct(housingPct) + ' of income';
+    $('sideTransport').textContent = money(transport) + '/wk';
+    $('sideLiving').textContent = money(living) + '/wk';
+    $('sideSavings').textContent = money(savings) + '/wk';
+    $('sideTotal').textContent = money(total) + '/wk';
+    $('loanDisplay').textContent = money(bankLoan);
+    $('monthlyRepayment').textContent = money(monthlyMortgage) + '/mo';
+    $('govtShareDisplay').textContent = money(govtShare) + ' (' + (equityPct*100).toFixed(1) + '%)';
+    $('cashDisplay').textContent = money(cash);
+
+    const groups = [
+      ['Housing',housing],['Transport',transport],['Groceries',weeklyNum('groceries')],['Medical',weeklyNum('medical')],['Pets',weeklyNum('pets')],
+      ['Utilities',weeklyNum('energy')+weeklyNum('internet')+weeklyNum('mobile')],['Home & personal',weeklyNum('personal')+weeklyNum('household')],
+      ['Lifestyle',weeklyNum('takeaway')+weeklyNum('entertainment')+weeklyNum('gifts')],['Career & AI',weeklyNum('career')+weeklyNum('ai')],['Giving',weeklyNum('donations')]
+    ];
+    if (savings > 0) groups.push(['Savings',savings]);
+    const chartTotal = groups.reduce((s,[,v]) => s + v,0);
+    let cursor = 0;
+    const segments = groups.map(([name,value],i) => {
+      const start = cursor;
+      const end = chartTotal > 0 ? cursor + value/chartTotal*100 : cursor;
+      cursor = end;
+      return {name,value,color:COLORS[i%COLORS.length],start,end};
+    });
+    $('donut').style.background = chartTotal > 0 ? 'conic-gradient(' + segments.map(s => s.color + ' ' + s.start + '% ' + s.end + '%').join(',') + ')' : '#ddd';
+    $('donutTotal').textContent = money(chartTotal);
+    $('legend').innerHTML = segments.map(s => '<div class="legend-item"><span class="swatch" style="background:' + s.color + '"></span><span class="legend-name">' + s.name + '</span><span class="legend-amt">' + money(s.value) + '</span></div>').join('');
+    updateBudgetLabels();
+  }
+
+  function serialise() {
+    const out = {};
+    ids.forEach(id => {
+      const el = $(id); if (!el) return;
+      out[id] = el.type === 'checkbox' ? el.checked : el.value;
+    });
+    return out;
+  }
+  function restore(values) {
+    ids.forEach(id => {
+      const el = $(id); if (!el || values[id] === undefined) return;
+      if (el.type === 'checkbox') el.checked = Boolean(values[id]); else el.value = values[id];
+    });
+  }
+  function syncPeriodState() {
+    periodicIds.forEach(id => {
+      const select = $(id + 'Period');
+      if (select) select.dataset.previous = select.value;
+    });
+  }
+  function changePeriod(select) {
+    const id = select.id.slice(0, -6);
+    const input = $(id);
+    const previous = select.dataset.previous || 'weekly';
+    const next = select.value;
+    const weeklyValue = num(id) * (weeklyFactors[previous] || 1);
+    input.value = (weeklyValue / (weeklyFactors[next] || 1)).toFixed(2).replace(/\.00$/, '');
+    select.dataset.previous = next;
+    calc();
+  }
+  function save() {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(serialise()));
+    const btn = $('saveDefaults'); const old = btn.textContent; btn.textContent = 'Saved'; setTimeout(() => btn.textContent = old, 900);
+  }
+  function loadSaved() {
+    try { const raw = localStorage.getItem(STORAGE_KEY); if (raw) restore(JSON.parse(raw)); } catch (_) {}
+  }
+  function reset() {
+    restore(builtIns); syncPeriodState(); localStorage.removeItem(STORAGE_KEY); calc();
+  }
+
+  document.querySelectorAll('.tab-btn').forEach(btn => btn.addEventListener('click', () => setTab(btn.id.includes('overview') ? 'overview' : 'budget')));
+  document.querySelectorAll('input,select').forEach(el => el.addEventListener('input', calc));
+  document.querySelectorAll('.period-select').forEach(select => select.addEventListener('change', () => changePeriod(select)));
+  $('propertyType').addEventListener('change', calc);
+  $('saveDefaults').addEventListener('click', save);
+  $('resetDefaults').addEventListener('click', reset);
+
+  document.querySelectorAll('.info-btn').forEach(btn => {
+    btn.addEventListener('click', ev => {
+      ev.stopPropagation();
+      const pop = btn.closest('.budget-row').querySelector('.info-popover');
+      const opening = pop.hidden;
+      document.querySelectorAll('.info-popover').forEach(p => p.hidden = true);
+      document.querySelectorAll('.info-btn').forEach(b => b.setAttribute('aria-expanded','false'));
+      pop.hidden = !opening;
+      btn.setAttribute('aria-expanded', String(opening));
+    });
   });
+  document.addEventListener('click', ev => {
+    if (!ev.target.closest('.info-popover') && !ev.target.closest('.info-btn')) {
+      document.querySelectorAll('.info-popover').forEach(p => p.hidden = true);
+      document.querySelectorAll('.info-btn').forEach(b => b.setAttribute('aria-expanded','false'));
+    }
+  });
+  document.addEventListener('keydown', ev => {
+    if (ev.key === 'Escape') {
+      document.querySelectorAll('.info-popover').forEach(p => p.hidden = true);
+      document.querySelectorAll('.info-btn').forEach(b => b.setAttribute('aria-expanded','false'));
+    }
+  });
+
+  loadSaved();
+  syncPeriodState();
   calc();
-}
-
-setEquityLimit();
-calc();
+})();
 </script>
 </body>
 </html>
