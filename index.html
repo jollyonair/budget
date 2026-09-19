@@ -152,7 +152,7 @@
         <div class="card">
           <h2>Property scenario</h2>
           <div class="scenario-grid">
-            <div class="field"><label for="purchasePrice">Purchase price</label><input id="purchasePrice" type="number" min="0" step="5000" value="880000"></div>
+            <div class="field"><label for="purchasePrice">Purchase price</label><input id="purchasePrice" type="number" min="0" step="5000" value="860000"></div>
             <div class="field"><label for="strata">Strata / quarter</label><input id="strata" type="number" min="0" step="10" value="1525.07"></div>
             <div class="field"><label for="council">Council / quarter</label><input id="council" type="number" min="0" step="5" value="334.50"></div>
             <div class="field"><label for="water">Water / quarter</label><input id="water" type="number" min="0" step="5" value="172.79"></div>
@@ -246,12 +246,12 @@
           <div class="budget-list">
             <div class="budget-row">
               <div><div class="label-line"><label for="carOwnership">Car</label><button class="info-btn" type="button" aria-expanded="false" aria-label="About Car costs">i</button></div><div class="row-note">Fixed car ownership and maintenance</div>
-                <div class="info-popover" hidden><strong>Car</strong><br><span class="dim">Insurance, rego/CTP, servicing, tyres and repairs. Petrol and tolls are separate.</span><br><br><strong>Based on:</strong> the ongoing ownership costs of the Mazda.<br><strong>Current budget:</strong> <span data-budget-for="carOwnership"></span>/week.</div>
+                <div class="info-popover" hidden><strong>Car</strong><br><span class="dim">Comprehensive insurance, rego/CTP, servicing, tyres and repairs. Petrol and tolls are separate.</span><br><br><strong>Based on:</strong> ongoing Mazda ownership costs, including Budget Direct comprehensive insurance. NRMA membership is excluded because the Mazda includes five years of roadside assistance.<br><strong>Current budget:</strong> <span data-budget-for="carOwnership"></span>/week.</div>
               </div><div><div class="money-input"><input id="carOwnership" type="number" min="0" step="1" value="68"></div><div class="suffix">per week</div></div>
             </div>
             <div class="budget-row">
               <div><div class="label-line"><label for="fuelWeekly">Fuel</label><button class="info-btn" type="button" aria-expanded="false" aria-label="About Fuel">i</button></div><div class="row-note">Conservative weekly fuel allowance</div>
-                <div class="info-popover" hidden><strong>Fuel</strong><br><span class="dim">A conservative allowance for regular driving rather than recalculating every listing.</span><br><br><strong>Based on:</strong> the stress-tested Eastern Sydney commute, five office days a week, local driving and occasional longer trips.<br><strong>Current budget:</strong> <span data-budget-for="fuelWeekly"></span>/week.</div>
+                <div class="info-popover" hidden><strong>Fuel</strong><br><span class="dim">A deliberately conservative fixed allowance for the Eastern Sydney property search.</span><br><br><strong>Based on:</strong> about 45 km each way to work, five days a week, 25 km of other local driving per week, 10 L/100 km and one Sydney–Port Stephens return trip per year. The stress test used $2.50/L.<br><strong>Current budget:</strong> <span data-budget-for="fuelWeekly"></span>/week.</div>
               </div><div><div class="money-input"><input id="fuelWeekly" type="number" min="0" step="1" value="120"></div><div class="suffix">per week</div></div>
             </div>
             <div class="budget-row">
@@ -269,12 +269,12 @@
           <div class="budget-list living-budget-list" id="livingBudgetList">
             <div class="budget-row">
               <div><div class="label-line"><label for="groceries">Groceries</label><button class="info-btn" type="button" aria-expanded="false" aria-label="About Groceries">i</button></div><div class="row-note">Food and everyday supermarket supplies</div>
-                <div class="info-popover" hidden><strong>Groceries</strong><br><span class="dim">Food for home plus ordinary supermarket household consumables.</span><br><br><strong>Based on:</strong> Feather &amp; Bone/local butcher, Rita’s Farm, Woolworths, Coles and Aldi.<br><strong>Planning basis:</strong> $100 meat + $65 fresh produce + $110 supermarkets + $25 buffer.<br><strong>Current budget:</strong> <span data-budget-for="groceries"></span>/week.</div>
+                <div class="info-popover" hidden><strong>Groceries</strong><br><span class="dim">Food for home plus ordinary supermarket household consumables.</span><br><br><strong>Based on:</strong> $100 meat from a mix of Feather &amp; Bone and a cheaper local butcher + $65 every week at Rita’s Farm + $110 at supermarkets + a $25 buffer.<br><strong>Current budget:</strong> <span data-budget-for="groceries"></span>/week.</div>
               </div><div><div class="money-input"><input id="groceries" type="number" min="0" step="5" value="300"></div><div class="suffix">per week</div></div>
             </div>
             <div class="budget-row">
               <div><div class="label-line"><label for="takeaway">Takeaway</label><button class="info-btn" type="button" aria-expanded="false" aria-label="About Takeaway">i</button></div><div class="row-note">Takeaway, restaurants, cafés and food while out</div>
-                <div class="info-popover" hidden><strong>Takeaway</strong><br><span class="dim">Ready-to-eat food bought outside the grocery shop. Kept separate so discretionary food spending is easy to see.</span><br><br><strong>Based on:</strong> recent takeaway, cafés and occasional meals out.<br><strong>Current budget:</strong> <span data-budget-for="takeaway"></span>/week.</div>
+                <div class="info-popover" hidden><strong>Takeaway</strong><br><span class="dim">Ready-to-eat food bought outside the grocery shop. Kept separate so discretionary food spending is easy to see.</span><br><br><strong>Based on:</strong> a realistic forward allowance informed by recent takeaway, cafés and occasional meals out—not the unusually low older historical average.<br><strong>Current budget:</strong> <span data-budget-for="takeaway"></span>/week.</div>
               </div><div><div class="money-input"><input id="takeaway" type="number" min="0" step="5" value="20"></div><div class="suffix">per week</div></div>
             </div>
             <div class="budget-row">
@@ -284,7 +284,7 @@
             </div>
             <div class="budget-row">
               <div><div class="label-line"><label for="personal">Personal</label><button class="info-btn" type="button" aria-expanded="false" aria-label="About Personal">i</button></div><div class="row-note">Clothing and personal care</div>
-                <div class="info-popover" hidden><strong>Personal</strong><br><span class="dim">Clothes, shoes, haircuts/barber, skincare and other personal-care spending.</span><br><br><strong>Based on:</strong> $1,000 a year for household clothing, plus recent haircut and skincare spending, rounded to a practical weekly allowance.<br><strong>Current budget:</strong> <span data-budget-for="personal"></span>/week.</div>
+                <div class="info-popover" hidden><strong>Personal</strong><br><span class="dim">Clothes, shoes, haircuts/barber, skincare and other personal-care spending.</span><br><br><strong>Based on:</strong> about $1,000 a year for Chris and Vanessa’s clothing, Chris’s haircuts at roughly $5/week, and Kora and other personal care at roughly $10/week.<br><strong>Current budget:</strong> <span data-budget-for="personal"></span>/week.</div>
               </div><div><div class="money-input"><input id="personal" type="number" min="0" step="5" value="35"></div><div class="suffix">per week</div></div>
             </div>
             <div class="budget-row">
@@ -303,7 +303,7 @@
               </div><div><div class="money-input"><input id="internet" type="number" min="0" step="0.5" value="21.54"></div><div class="suffix">per week</div></div>
             </div>
             <div class="budget-row">
-              <div><div class="label-line"><label for="mobile">Mobile</label><button class="info-btn" type="button" aria-expanded="false" aria-label="About Mobile">i</button></div><div class="row-note">Mobile phone service only</div>
+              <div><div class="label-line"><label for="mobile">Mobile</label><button class="info-btn" type="button" aria-expanded="false" aria-label="About Mobile">i</button></div><div class="row-note">Two mobile phone services</div>
                 <div class="info-popover" hidden><strong>Mobile</strong><br><span class="dim">Mobile phone services only. Devices and accessories are not included.</span><br><br><strong>Based on:</strong> two $20 mobile services renewing every 28 days.<br><strong>Current budget:</strong> <span data-budget-for="mobile"></span>/week.</div>
               </div><div><div class="money-input"><input id="mobile" type="number" min="0" step="0.5" value="10"></div><div class="suffix">per week</div></div>
             </div>
@@ -314,7 +314,7 @@
             </div>
             <div class="budget-row">
               <div><div class="label-line"><label for="entertainment">Entertainment</label><button class="info-btn" type="button" aria-expanded="false" aria-label="About Entertainment">i</button></div><div class="row-note">Streaming, books, games and leisure</div>
-                <div class="info-popover" hidden><strong>Entertainment</strong><br><span class="dim">Streaming, books, games and similar leisure spending.</span><br><br><strong>Based on:</strong> recurring entertainment services plus room for occasional purchases, without treating a large one-off purchase as the weekly norm.<br><strong>Current budget:</strong> <span data-budget-for="entertainment"></span>/week.</div>
+                <div class="info-popover" hidden><strong>Entertainment</strong><br><span class="dim">Streaming, books and audiobooks, games, movies and similar leisure spending.</span><br><br><strong>Based on:</strong> YouTube, one other streaming service and room for occasional purchases, without treating large one-off purchases as the weekly norm.<br><strong>Current budget:</strong> <span data-budget-for="entertainment"></span>/week.</div>
               </div><div><div class="money-input"><input id="entertainment" type="number" min="0" step="1" value="12"></div><div class="suffix">per week</div></div>
             </div>
             <div class="budget-row">
@@ -323,13 +323,13 @@
               </div><div><div class="money-input"><input id="gifts" type="number" min="0" step="0.01" value="19.23"></div><div class="suffix">per week</div></div>
             </div>
             <div class="budget-row">
-              <div><div class="label-line"><label for="career">Career</label><button class="info-btn" type="button" aria-expanded="false" aria-label="About Career">i</button></div><div class="row-note">Career tools, courses and training</div>
-                <div class="info-popover" hidden><strong>Career</strong><br><span class="dim">Career development, training and professional tools.</span><br><br><strong>Based on:</strong> Workflowy while primarily work-related, courses/training for either of you, Vanessa’s creative study and professional memberships. Fast Company is no longer included.<br><strong>Current budget:</strong> <span data-budget-for="career"></span>/week.</div>
-              </div><div><div class="money-input"><input id="career" type="number" min="0" step="1" value="14"></div><div class="suffix">per week</div></div>
+              <div><div class="label-line"><label for="career">Career</label><button class="info-btn" type="button" aria-expanded="false" aria-label="About Career">i</button></div><div class="row-note">Domains, tax, professional tools and training</div>
+                <div class="info-popover" hidden><strong>Career</strong><br><span class="dim">Domains, professional tools and memberships, tax preparation, courses and other career-related costs for Chris and Vanessa.</span><br><br><strong>Based on:</strong> about $211/year for domains and VentraIP, $121.88/year for Workflowy, $35/year for the Aisling Society and $400/year for two tax returns, plus a modest training and professional-cost buffer.<br><br><strong>Excludes:</strong> discontinued DigitalOcean, reimbursed family email hosting, the exceptional $440 Count Wealth bill, AI services and home internet.<br><strong>Current budget:</strong> <span data-budget-for="career"></span>/week.</div>
+              </div><div><div class="money-input"><input id="career" type="number" min="0" step="1" value="20"></div><div class="suffix">per week</div></div>
             </div>
             <div class="budget-row">
               <div><div class="label-line"><label for="ai">AI</label><button class="info-btn" type="button" aria-expanded="false" aria-label="About AI">i</button></div><div class="row-note">Paid AI subscriptions and usage</div>
-                <div class="info-popover" hidden><strong>AI</strong><br><span class="dim">Paid AI tools and usage, separated so changing providers or API usage is easy to see.</span><br><br><strong>Based on:</strong> ChatGPT, Claude, OpenAI API and other paid AI tools/services or AI-powered formulas.<br><strong>Current budget:</strong> <span data-budget-for="ai"></span>/week.</div>
+                <div class="info-popover" hidden><strong>AI</strong><br><span class="dim">Paid AI tools and usage, separated so changing providers or API usage is easy to see.</span><br><br><strong>Based on:</strong> ChatGPT, API usage and other AI services actually being used. Cancelled or inactive historical subscriptions are excluded.<br><strong>Current budget:</strong> <span data-budget-for="ai"></span>/week.</div>
               </div><div><div class="money-input"><input id="ai" type="number" min="0" step="1" value="20"></div><div class="suffix">per week</div></div>
             </div>
             <div class="budget-row">
@@ -346,7 +346,7 @@
       <button class="btn primary" id="saveDefaults" type="button">Save current values</button>
       <button class="btn" id="resetDefaults" type="button">Reset to built-in defaults</button>
     </div>
-    <div class="footer-note">Saved values stay in this browser only. The built-in defaults remain in the site code and can always be restored.</div>
+    <div class="footer-note">This is a forward-looking conservative household budget, informed by historical spending without annualising known one-offs, discontinued services or reimbursed expenses. Exclusions include family email hosting, DigitalOcean, NRMA membership, the exceptional Count Wealth bill, major one-off hardware and vehicle acquisition or transfer costs. Saved values stay in this browser only; the built-in defaults can always be restored.</div>
   </section>
 </main>
 <script>
