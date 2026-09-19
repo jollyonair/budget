@@ -251,7 +251,7 @@
             </div>
             <div class="budget-row">
               <div><div class="label-line"><label for="fuelWeekly">Fuel</label><button class="info-btn" type="button" aria-expanded="false" aria-label="About Fuel">i</button></div><div class="row-note">Conservative weekly fuel allowance</div>
-                <div class="info-popover" hidden><strong>Fuel</strong><br><span class="dim">A conservative allowance for regular driving rather than recalculating every listing.</span><br><br><strong>Based on:</strong> about 45 km each way to work, five days a week, 10 L/100 km, some local driving and one Sydney–Port Stephens return trip per year. The advanced calculator uses $2.50/L by default.<br><strong>Current budget:</strong> <span data-budget-for="fuelWeekly"></span>/week.</div>
+                <div class="info-popover" hidden><strong>Fuel</strong><br><span class="dim">A conservative allowance for regular driving rather than recalculating every listing.</span><br><br><strong>Based on:</strong> the stress-tested Eastern Sydney commute, five office days a week, local driving and occasional longer trips.<br><strong>Current budget:</strong> <span data-budget-for="fuelWeekly"></span>/week.</div>
               </div><div><div class="money-input"><input id="fuelWeekly" type="number" min="0" step="1" value="120"></div><div class="suffix">per week</div></div>
             </div>
             <div class="budget-row">
@@ -260,21 +260,6 @@
               </div><div><div class="money-input"><input id="tollsWeekly" type="number" min="0" step="1" value="60"></div><div class="suffix">per week</div></div>
             </div>
           </div>
-          <details class="advanced">
-            <summary>Optional fuel calculator</summary>
-            <div class="advanced-body">
-              <div class="switch-row"><span>Use calculated fuel instead of the fixed fuel allowance</span><input id="useCalculatedFuel" type="checkbox"></div>
-              <div class="mini-grid">
-                <div class="field"><label for="distanceKm">Commute one-way (km)</label><input id="distanceKm" type="number" min="0" step="1" value="45"></div>
-                <div class="field"><label>Office days</label><input type="number" value="5" disabled><div class="hint">Fixed at five days; no remote-work assumption.</div></div>
-                <div class="field"><label for="fuelEff">Fuel use (L/100 km)</label><input id="fuelEff" type="number" min="0" step="0.1" value="10"></div>
-                <div class="field"><label for="petrolPrice">Planning petrol price ($/L)</label><input id="petrolPrice" type="number" min="0" step="0.01" value="2.50"></div>
-                <div class="field"><label for="localKm">Other local driving (km/week)</label><input id="localKm" type="number" min="0" step="5" value="25"></div>
-                <div class="field"><label for="annualTripKm">Annual long-trip km</label><input id="annualTripKm" type="number" min="0" step="10" value="440"><div class="hint">Approximate annual Sydney–Port Stephens return allowance.</div></div>
-              </div>
-              <div class="callout" id="fuelCalcCallout">Calculated fuel: $0/week</div>
-            </div>
-          </details>
         </section>
       </div>
 
@@ -299,8 +284,8 @@
             </div>
             <div class="budget-row">
               <div><div class="label-line"><label for="personal">Personal</label><button class="info-btn" type="button" aria-expanded="false" aria-label="About Personal">i</button></div><div class="row-note">Clothing and personal care</div>
-                <div class="info-popover" hidden><strong>Personal</strong><br><span class="dim">Clothes, shoes, haircuts/barber, skincare and other personal-care spending.</span><br><br><strong>Based on:</strong> actual clothing and personal-care purchases, smoothed into a weekly allowance.<br><strong>Current budget:</strong> <span data-budget-for="personal"></span>/week.</div>
-              </div><div><div class="money-input"><input id="personal" type="number" min="0" step="5" value="30"></div><div class="suffix">per week</div></div>
+                <div class="info-popover" hidden><strong>Personal</strong><br><span class="dim">Clothes, shoes, haircuts/barber, skincare and other personal-care spending.</span><br><br><strong>Based on:</strong> $1,000 a year for household clothing, plus recent haircut and skincare spending, rounded to a practical weekly allowance.<br><strong>Current budget:</strong> <span data-budget-for="personal"></span>/week.</div>
+              </div><div><div class="money-input"><input id="personal" type="number" min="0" step="5" value="35"></div><div class="suffix">per week</div></div>
             </div>
             <div class="budget-row">
               <div><div class="label-line"><label for="pets">Pets</label><button class="info-btn" type="button" aria-expanded="false" aria-label="About Pets">i</button></div><div class="row-note">Food, supplies, treatments and vet reserve</div>
@@ -319,8 +304,8 @@
             </div>
             <div class="budget-row">
               <div><div class="label-line"><label for="mobile">Mobile</label><button class="info-btn" type="button" aria-expanded="false" aria-label="About Mobile">i</button></div><div class="row-note">Mobile phone service only</div>
-                <div class="info-popover" hidden><strong>Mobile</strong><br><span class="dim">Mobile phone plan/service. Devices and accessories are not included.</span><br><br><strong>Based on:</strong> the current Amaysim plan or its replacement.<br><strong>Current budget:</strong> <span data-budget-for="mobile"></span>/week.</div>
-              </div><div><div class="money-input"><input id="mobile" type="number" min="0" step="0.5" value="4.62"></div><div class="suffix">per week</div></div>
+                <div class="info-popover" hidden><strong>Mobile</strong><br><span class="dim">Mobile phone services only. Devices and accessories are not included.</span><br><br><strong>Based on:</strong> two $20 mobile services renewing every 28 days.<br><strong>Current budget:</strong> <span data-budget-for="mobile"></span>/week.</div>
+              </div><div><div class="money-input"><input id="mobile" type="number" min="0" step="0.5" value="10"></div><div class="suffix">per week</div></div>
             </div>
             <div class="budget-row">
               <div><div class="label-line"><label for="household">Household</label><button class="info-btn" type="button" aria-expanded="false" aria-label="About Household">i</button></div><div class="row-note">Larger and occasional home purchases</div>
@@ -381,7 +366,7 @@
   const weeklyFactors = { weekly:1, fortnightly:1/2, monthly:12/52, quarterly:4/52, annually:1/52 };
   const ids = [
     'purchasePrice','strata','council','water','weeklyIncome','cashContribution','savingsWeekly','propertyType','govtEquity','interestRate','loanTerm','housingTarget',
-    'carOwnership','fuelWeekly','tollsWeekly','useCalculatedFuel','distanceKm','fuelEff','petrolPrice','localKm','annualTripKm',
+    'carOwnership','fuelWeekly','tollsWeekly',
     'groceries','takeaway','medical','personal','pets','energy','internet','mobile','household','entertainment','gifts','career','ai','donations'
   ].concat(periodicIds.map(id => id + 'Period'));
   const livingIds = ['groceries','takeaway','medical','personal','pets','energy','internet','mobile','household','entertainment','gifts','career','ai','donations'];
@@ -453,11 +438,6 @@
     return payment * (1 - Math.pow(1 + monthlyRate, -months)) / monthlyRate;
   }
 
-  function calculatedFuel() {
-    const weeklyKm = num('distanceKm') * 2 * 5 + num('localKm') + num('annualTripKm') / 52;
-    return weeklyKm * num('fuelEff') / 100 * num('petrolPrice');
-  }
-
   function weeklyLiving() { return livingIds.reduce((sum,id) => sum + weeklyNum(id), 0); }
 
   function updateBudgetLabels() {
@@ -491,16 +471,13 @@
     const housing = weeklyMortgage + strataWeekly + councilWeekly + waterWeekly;
     const housingPct = income > 0 ? housing / income * 100 : 0;
 
-    const fuelCalc = calculatedFuel();
-    const fuel = $('useCalculatedFuel').checked ? fuelCalc : weeklyNum('fuelWeekly');
+    const fuel = weeklyNum('fuelWeekly');
     const transport = weeklyNum('carOwnership') + fuel + weeklyNum('tollsWeekly');
     const living = weeklyLiving();
     const savings = weeklyNum('savingsWeekly');
     const total = housing + transport + living + savings;
     const surplus = income - total;
     const monthlySurplus = surplus * 52 / 12;
-
-    $('fuelCalcCallout').textContent = 'Calculated fuel: ' + money2(fuelCalc) + '/week. ' + ($('useCalculatedFuel').checked ? 'This is currently being used.' : 'The fixed fuel allowance is currently being used.');
 
     const targetWeeklyHousing = income * num('housingTarget') / 100;
     const targetWeeklyMortgage = Math.max(0, targetWeeklyHousing - strataWeekly - councilWeekly - waterWeekly);
