@@ -21,10 +21,14 @@
   h1 { margin:0; font-size:18px; font-weight:700; }
   .subtitle { color:var(--muted2); font-size:13px; }
   main { max-width:1120px; margin:auto; padding:18px 22px 40px; }
-  .tabs { display:flex; gap:4px; width:max-content; background:var(--surface); padding:4px; border:1px solid var(--border2); border-radius:10px; margin-bottom:16px; }
+  .top-controls { display:flex; justify-content:space-between; align-items:center; gap:12px; margin-bottom:16px; }
+  .tabs { display:flex; gap:4px; width:max-content; background:var(--surface); padding:4px; border:1px solid var(--border2); border-radius:10px; }
   .tab-btn { border:0; background:transparent; border-radius:7px; padding:9px 18px; cursor:pointer; color:var(--muted); font-weight:650; }
   .tab-btn[aria-selected="true"] { background:var(--accent-bg); color:var(--accent); }
-  .tab-btn:focus-visible,.info-btn:focus-visible,.btn:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visible { outline:2px solid var(--accent); outline-offset:2px; }
+  .profile-toggle { display:flex; align-items:center; gap:3px; padding:4px; border:1px solid var(--border2); border-radius:999px; background:var(--surface); box-shadow:var(--shadow); }
+  .profile-btn { min-width:76px; border:0; border-radius:999px; padding:8px 14px; background:transparent; color:var(--muted); cursor:pointer; font-weight:700; }
+  .profile-btn[aria-pressed="true"] { background:var(--text); color:var(--surface); }
+  .tab-btn:focus-visible,.profile-btn:focus-visible,.info-btn:focus-visible,.btn:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visible { outline:2px solid var(--accent); outline-offset:2px; }
   .tab-panel[hidden] { display:none; }
 
   .overview-layout { display:grid; grid-template-columns:minmax(0,1fr) 340px; gap:16px; align-items:stretch; }
@@ -72,9 +76,11 @@
   .row strong { text-align:right; }
   .row.total { border-top:1px solid var(--border2); margin-top:4px; padding-top:10px; font-size:15px; }
 
-  .budget-grid { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:14px; align-items:start; }
+  .budget-grid { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:14px; align-items:stretch; }
   .budget-grid > .stack { display:contents; }
   .budget-section { background:var(--surface); border:1px solid var(--border2); border-radius:var(--radius); overflow:visible; box-shadow:var(--shadow); }
+  .transport-section { display:flex; flex-direction:column; height:100%; }
+  .transport-section .budget-list { flex:1; display:grid; grid-template-rows:repeat(3,minmax(0,1fr)); }
   .living-costs { grid-column:1 / -1; }
   .living-budget-list { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); grid-template-rows:repeat(7,auto); grid-auto-flow:column; }
   .living-budget-list .budget-row:nth-child(n+8) { border-left:1px solid var(--border); }
@@ -90,6 +96,7 @@
   .money-input::before { content:"$"; position:absolute; left:10px; top:50%; transform:translateY(-50%); color:var(--muted2); pointer-events:none; }
   .money-input input { width:100%; min-height:40px; padding:7px 9px 7px 23px; border:1px solid var(--border2); border-radius:8px; background:var(--surface2); text-align:right; }
   .amount-control { display:grid; grid-template-columns:minmax(0,1fr) 104px; gap:6px; align-items:center; }
+  .amount-control.income-amount-control { grid-template-columns:minmax(0,1fr) 92px; }
   .period-select { width:100%; min-height:40px; border:1px solid var(--border2); border-radius:8px; padding:7px 8px; background:var(--surface2); color:var(--text); cursor:pointer; }
   .amount-control .suffix { grid-column:1 / -1; }
   .suffix { font-size:11px; color:var(--muted2); text-align:right; margin-top:2px; }
@@ -118,6 +125,8 @@
 
   @media (max-width:880px) {
     .overview-layout,.budget-grid { grid-template-columns:1fr; }
+    .transport-section { display:block; height:auto; }
+    .transport-section .budget-list { display:block; }
     .side-card { position:static; min-height:0; }
     .living-costs { grid-column:auto; }
     .scenario-grid { grid-template-columns:1fr 1fr; }
@@ -125,7 +134,8 @@
   @media (max-width:620px) {
     .header-inner,main { padding-left:12px; padding-right:12px; }
     .subtitle { width:100%; }
-    .tabs { width:100%; } .tab-btn { flex:1; }
+    .top-controls { align-items:stretch; flex-direction:column; }
+    .tabs,.profile-toggle { width:100%; } .tab-btn,.profile-btn { flex:1; }
     .scenario-grid,.pnl,.mini-grid { grid-template-columns:1fr; }
     .donut-wrap { grid-template-columns:1fr; }
     .legend { grid-template-columns:1fr 1fr; }
@@ -141,9 +151,15 @@
 <body>
 <header><div class="header-inner"><h1>Property Budget Calculator</h1><span class="subtitle">Weekly household budget &amp; property affordability planner</span></div></header>
 <main>
-  <div class="tabs" role="tablist" aria-label="Budget calculator sections">
-    <button class="tab-btn" id="tab-overview-btn" role="tab" aria-controls="tab-overview" aria-selected="true">Overview</button>
-    <button class="tab-btn" id="tab-budget-btn" role="tab" aria-controls="tab-budget" aria-selected="false">Budget</button>
+  <div class="top-controls">
+    <div class="tabs" role="tablist" aria-label="Budget calculator sections">
+      <button class="tab-btn" id="tab-overview-btn" role="tab" aria-controls="tab-overview" aria-selected="true">Overview</button>
+      <button class="tab-btn" id="tab-budget-btn" role="tab" aria-controls="tab-budget" aria-selected="false">Budget</button>
+    </div>
+    <div class="profile-toggle" role="group" aria-label="Living-cost budget">
+      <button class="profile-btn" id="profile-tight" type="button" aria-pressed="false">Tight</button>
+      <button class="profile-btn" id="profile-loose" type="button" aria-pressed="true">Loose</button>
+    </div>
   </div>
 
   <section id="tab-overview" class="tab-panel" role="tabpanel" aria-labelledby="tab-overview-btn">
@@ -212,8 +228,8 @@
           <div class="budget-list">
             <div class="budget-row">
               <div><div class="label-line"><label for="weeklyIncome">Income</label><button class="info-btn" type="button" aria-expanded="false" aria-label="About Income">i</button></div><div class="row-note">Reliable household net income</div>
-                <div class="info-popover" hidden><strong>Income</strong><br><span class="dim">Reliable net household income available each week. Keep speculative future income out until it is actually recurring.</span><br><br><strong>Current budget:</strong> <span data-budget-for="weeklyIncome"></span>/week.</div>
-              </div><div><div class="money-input"><input id="weeklyIncome" type="number" min="0" step="100" value="75200"></div><div class="suffix">per year</div></div>
+                <div class="info-popover" hidden><strong>Income</strong><br><span class="dim">Reliable net household income available each week. Keep speculative future income out until it is actually recurring.</span><br><br><strong>Based on:</strong> $70,000 annual net income for Chris and Vanessa's updated government payment of $4,894.76 per year.<br><strong>Current budget:</strong> <span data-budget-for="weeklyIncome"></span>/week.</div>
+              </div><div class="income-amount-control"><div class="money-input"><input id="weeklyIncome" type="number" min="0" step="0.01" value="74894.76"></div><div class="suffix">per year</div></div>
             </div>
             <div class="budget-row">
               <div><div class="label-line"><label for="cashContribution">Cash</label><button class="info-btn" type="button" aria-expanded="false" aria-label="About Cash contribution">i</button></div><div class="row-note">Participant cash contribution to purchase</div>
@@ -221,9 +237,19 @@
               </div><div><div class="money-input"><input id="cashContribution" type="number" min="0" step="5000" value="320000"></div></div>
             </div>
             <div class="budget-row">
-              <div><div class="label-line"><label for="savingsWeekly">Savings</label><button class="info-btn" type="button" aria-expanded="false" aria-label="About Savings">i</button></div><div class="row-note">Deliberate weekly saving after normal costs</div>
-                <div class="info-popover" hidden><strong>Savings</strong><br><span class="dim">Money deliberately left aside each week after normal expenses. This is separate from category reserves such as Gifts, Pets or Household.</span><br><br><strong>Current budget:</strong> <span data-budget-for="savingsWeekly"></span>/week.</div>
-              </div><div><div class="money-input"><input id="savingsWeekly" type="number" min="0" step="5" value="0"></div><div class="suffix">per week</div></div>
+              <div><div class="label-line"><label for="emergencySavings">Emergency Fund</label><button class="info-btn" type="button" aria-expanded="false" aria-label="About Emergency Fund">i</button></div><div class="row-note">Long-term reserve for genuine emergencies</div>
+                <div class="info-popover" hidden><strong>Emergency Fund</strong><br><span class="dim">A long-term reserve intended to be touched rarely and only for genuine emergencies.</span><br><br><strong>Starting plan:</strong> seed this account with about $10,000 after buying, then keep adding a small regular amount in a HISA.<br><strong>Current budget:</strong> <span data-budget-for="emergencySavings"></span>/week.</div>
+              </div><div><div class="money-input"><input id="emergencySavings" type="number" min="0" step="5" value="10"></div><div class="suffix">per week</div></div>
+            </div>
+            <div class="budget-row">
+              <div><div class="label-line"><label for="notEmergencySavings">Not-so-emergency Fund</label><button class="info-btn" type="button" aria-expanded="false" aria-label="About Not-so-emergency Fund">i</button></div><div class="row-note">Infrequent costs outside the regular budget</div>
+                <div class="info-popover" hidden><strong>Not-so-emergency Fund</strong><br><span class="dim">For legitimate but infrequent costs that are not true emergencies.</span><br><br><strong>Examples:</strong> a colleague or friend’s celebration and gift, rare fine dining with friends, or another unexpected social obligation. Close-family presents remain in Gifts.<br><strong>Current budget:</strong> <span data-budget-for="notEmergencySavings"></span>/week.</div>
+              </div><div><div class="money-input"><input id="notEmergencySavings" type="number" min="0" step="5" value="10"></div><div class="suffix">per week</div></div>
+            </div>
+            <div class="budget-row">
+              <div><div class="label-line"><label for="regularSavings">Regular Savings</label><button class="info-btn" type="button" aria-expanded="false" aria-label="About Regular Savings">i</button></div><div class="row-note">General savings for future goals and flexibility</div>
+                <div class="info-popover" hidden><strong>Regular Savings</strong><br><span class="dim">General-purpose savings for future goals and extra financial flexibility, held separately from the two reserve funds.</span><br><br><strong>Current budget:</strong> <span data-budget-for="regularSavings"></span>/week.</div>
+              </div><div><div class="money-input"><input id="regularSavings" type="number" min="0" step="5" value="10"></div><div class="suffix">per week</div></div>
             </div>
           </div>
           <details class="advanced">
@@ -241,7 +267,7 @@
           </details>
         </section>
 
-        <section class="budget-section">
+        <section class="budget-section transport-section">
           <h2>Transport</h2>
           <div class="budget-list">
             <div class="budget-row">
@@ -269,12 +295,12 @@
           <div class="budget-list living-budget-list" id="livingBudgetList">
             <div class="budget-row">
               <div><div class="label-line"><label for="groceries">Groceries</label><button class="info-btn" type="button" aria-expanded="false" aria-label="About Groceries">i</button></div><div class="row-note">Food and everyday supermarket supplies</div>
-                <div class="info-popover" hidden><strong>Groceries</strong><br><span class="dim">Food for home plus ordinary supermarket household consumables.</span><br><br><strong>Based on:</strong> $100 meat from a mix of Feather &amp; Bone and a cheaper local butcher + $65 every week at Rita’s Farm + $110 at supermarkets + a $25 buffer.<br><strong>Current budget:</strong> <span data-budget-for="groceries"></span>/week.</div>
+                <div class="info-popover" hidden><strong>Groceries</strong><br><span class="dim">Food for home plus ordinary supermarket household consumables.</span><br><br><strong>Loose:</strong> $100 meat + $65 every week at Rita’s Farm + $110 at supermarkets + a $25 buffer.<br><strong>Tight:</strong> the same core plan without the $25 buffer.<br><strong>Current budget:</strong> <span data-budget-for="groceries"></span>/week.</div>
               </div><div><div class="money-input"><input id="groceries" type="number" min="0" step="5" value="300"></div><div class="suffix">per week</div></div>
             </div>
             <div class="budget-row">
               <div><div class="label-line"><label for="takeaway">Takeaway</label><button class="info-btn" type="button" aria-expanded="false" aria-label="About Takeaway">i</button></div><div class="row-note">Takeaway, restaurants, cafés and food while out</div>
-                <div class="info-popover" hidden><strong>Takeaway</strong><br><span class="dim">Ready-to-eat food bought outside the grocery shop. Kept separate so discretionary food spending is easy to see.</span><br><br><strong>Based on:</strong> a realistic forward allowance informed by recent takeaway, cafés and occasional meals out—not the unusually low older historical average.<br><strong>Current budget:</strong> <span data-budget-for="takeaway"></span>/week.</div>
+                <div class="info-popover" hidden><strong>Takeaway</strong><br><span class="dim">Ready-to-eat food bought outside the grocery shop. Kept separate so discretionary food spending is easy to see.</span><br><br><strong>Loose:</strong> a modest allowance for takeaway, cafés and occasional meals out.<br><strong>Tight:</strong> removed as a non-essential regular expense.<br><strong>Current budget:</strong> <span data-budget-for="takeaway"></span>/week.</div>
               </div><div><div class="money-input"><input id="takeaway" type="number" min="0" step="5" value="20"></div><div class="suffix">per week</div></div>
             </div>
             <div class="budget-row">
@@ -284,8 +310,8 @@
             </div>
             <div class="budget-row">
               <div><div class="label-line"><label for="personal">Personal</label><button class="info-btn" type="button" aria-expanded="false" aria-label="About Personal">i</button></div><div class="row-note">Clothing and personal care</div>
-                <div class="info-popover" hidden><strong>Personal</strong><br><span class="dim">Clothes, shoes, haircuts/barber, skincare and other personal-care spending.</span><br><br><strong>Based on:</strong> about $1,000 a year for Chris and Vanessa’s clothing, Chris’s haircuts at roughly $5/week, and Kora and other personal care at roughly $10/week.<br><strong>Current budget:</strong> <span data-budget-for="personal"></span>/week.</div>
-              </div><div><div class="money-input"><input id="personal" type="number" min="0" step="5" value="35"></div><div class="suffix">per week</div></div>
+                <div class="info-popover" hidden><strong>Personal</strong><br><span class="dim">Clothes, shoes, haircuts/barber, skincare and other personal-care spending.</span><br><br><strong>Loose:</strong> $1,000/year combined clothing, Chris’s haircuts at about $5/week, two $100 haircuts a year for Vanessa, and about $10/week for Kora and other personal care.<br><strong>Tight:</strong> $400/year combined clothing, with the other personal-care allowances unchanged.<br><strong>Current budget:</strong> <span data-budget-for="personal"></span>/week.</div>
+              </div><div><div class="money-input"><input id="personal" type="number" min="0" step="1" value="38"></div><div class="suffix">per week</div></div>
             </div>
             <div class="budget-row">
               <div><div class="label-line"><label for="pets">Pets</label><button class="info-btn" type="button" aria-expanded="false" aria-label="About Pets">i</button></div><div class="row-note">Food, supplies, treatments and vet reserve</div>
@@ -294,8 +320,8 @@
             </div>
             <div class="budget-row">
               <div><div class="label-line"><label for="energy">Energy</label><button class="info-btn" type="button" aria-expanded="false" aria-label="About Energy">i</button></div><div class="row-note">Electricity; gas too if the property has it</div>
-                <div class="info-popover" hidden><strong>Energy</strong><br><span class="dim">Electricity, plus gas only if the future property has a separate gas service.</span><br><br><strong>Based on:</strong> a future-property planning allowance rather than the unusually expensive current rental bills still being investigated.<br><strong>Current budget:</strong> <span data-budget-for="energy"></span>/week.</div>
-              </div><div><div class="money-input"><input id="energy" type="number" min="0" step="5" value="60"></div><div class="suffix">per week</div></div>
+                <div class="info-popover" hidden><strong>Energy</strong><br><span class="dim">Electricity, plus gas only if the future property has a separate gas service.</span><br><br><strong>Loose:</strong> $1,500/year, providing a buffer above the old-location bills.<br><strong>Tight:</strong> $1,268.94/year, matching the four confirmed old-location Red Energy bills. The unusually expensive current rental remains excluded while its consumption is investigated.<br><strong>Current budget:</strong> <span data-budget-for="energy"></span>/week.</div>
+              </div><div><div class="money-input"><input id="energy" type="number" min="0" step="0.01" value="1500"></div><div class="suffix">per year</div></div>
             </div>
             <div class="budget-row">
               <div><div class="label-line"><label for="internet">Internet</label><button class="info-btn" type="button" aria-expanded="false" aria-label="About Internet">i</button></div><div class="row-note">Home ISP only</div>
@@ -314,7 +340,7 @@
             </div>
             <div class="budget-row">
               <div><div class="label-line"><label for="entertainment">Entertainment</label><button class="info-btn" type="button" aria-expanded="false" aria-label="About Entertainment">i</button></div><div class="row-note">Streaming, books, games and leisure</div>
-                <div class="info-popover" hidden><strong>Entertainment</strong><br><span class="dim">Streaming, books and audiobooks, games, movies and similar leisure spending.</span><br><br><strong>Based on:</strong> YouTube, one other streaming service and room for occasional purchases, without treating large one-off purchases as the weekly norm.<br><strong>Current budget:</strong> <span data-budget-for="entertainment"></span>/week.</div>
+                <div class="info-popover" hidden><strong>Entertainment</strong><br><span class="dim">Streaming, books and audiobooks, games, movies and similar leisure spending.</span><br><br><strong>Loose:</strong> YouTube, another streaming service and room for occasional purchases.<br><strong>Tight:</strong> YouTube all year plus three months each of Disney+ and Audible, rounded to $6/week.<br><strong>Current budget:</strong> <span data-budget-for="entertainment"></span>/week.</div>
               </div><div><div class="money-input"><input id="entertainment" type="number" min="0" step="1" value="12"></div><div class="suffix">per week</div></div>
             </div>
             <div class="budget-row">
@@ -329,12 +355,12 @@
             </div>
             <div class="budget-row">
               <div><div class="label-line"><label for="ai">AI</label><button class="info-btn" type="button" aria-expanded="false" aria-label="About AI">i</button></div><div class="row-note">Paid AI subscriptions and usage</div>
-                <div class="info-popover" hidden><strong>AI</strong><br><span class="dim">Paid AI tools and usage, separated so changing providers or API usage is easy to see.</span><br><br><strong>Based on:</strong> Chris's $30/month ChatGPT subscription and approximately $6/week of OpenAI API usage.<br><strong>Excluded:</strong> Vanessa's cancelled ChatGPT subscription after 26 September, Claude, Midjourney and the one-off Literature &amp; Latte purchase.<br><strong>Current budget:</strong> <span data-budget-for="ai"></span>/week.</div>
+                <div class="info-popover" hidden><strong>AI</strong><br><span class="dim">Paid AI tools and usage, separated so changing providers or API usage is easy to see.</span><br><br><strong>Loose:</strong> Chris’s $30/month ChatGPT subscription plus approximately $6/week of OpenAI API usage.<br><strong>Tight:</strong> API usage only. Vanessa’s cancelled ChatGPT subscription, Claude, Midjourney and the one-off Literature &amp; Latte purchase remain excluded.<br><strong>Current budget:</strong> <span data-budget-for="ai"></span>/week.</div>
               </div><div><div class="money-input"><input id="ai" type="number" min="0" step="1" value="13"></div><div class="suffix">per week</div></div>
             </div>
             <div class="budget-row">
               <div><div class="label-line"><label for="donations">Donations</label><button class="info-btn" type="button" aria-expanded="false" aria-label="About Donations">i</button></div><div class="row-note">Church and charitable giving</div>
-                <div class="info-popover" hidden><strong>Donations</strong><br><span class="dim">Church giving, charities and other regular donations. Kept separate from Gifts.</span><br><br><strong>Based on:</strong> $10/week church + $10/week other giving.<br><strong>Current budget:</strong> <span data-budget-for="donations"></span>/week.</div>
+                <div class="info-popover" hidden><strong>Donations</strong><br><span class="dim">Church giving, charities and other regular donations. Kept separate from Gifts.</span><br><br><strong>Loose:</strong> $10/week church + $10/week other giving.<br><strong>Tight:</strong> $10/week total.<br><strong>Current budget:</strong> <span data-budget-for="donations"></span>/week.</div>
               </div><div><div class="money-input"><input id="donations" type="number" min="0" step="5" value="20"></div><div class="suffix">per week</div></div>
             </div>
           </div>
@@ -346,30 +372,32 @@
       <button class="btn primary" id="saveDefaults" type="button">Save current values</button>
       <button class="btn" id="resetDefaults" type="button">Reset to built-in defaults</button>
     </div>
-    <div class="footer-note">This is a forward-looking conservative household budget, informed by historical spending without annualising known one-offs, discontinued services or reimbursed expenses. Exclusions include family email hosting, DigitalOcean, NRMA membership, the exceptional Count Wealth bill, major one-off hardware and vehicle acquisition or transfer costs. Saved values stay in this browser only; the built-in defaults can always be restored.</div>
+    <div class="footer-note">Loose uses sensible higher estimates and buffers. Tight is a lean but credible budget that reduces or removes non-essential spending. Income, housing, transport and savings stay shared so switching profiles isolates the effect of living costs. Known one-offs, discontinued services and reimbursed expenses remain excluded. Saved values stay in this browser only; the built-in defaults can always be restored.</div>
   </section>
 </main>
 <script>
 (() => {
   'use strict';
   const MAX_LOAN = 304000;
-  const STORAGE_KEY = 'propertyBudgetCalculator.v2';
+  const STORAGE_KEY = 'propertyBudgetCalculator.v3';
+  const LEGACY_STORAGE_KEY = 'propertyBudgetCalculator.v2';
   const COLORS = ['#2a78d6','#1d9e75','#ef9f27','#e24b4a','#7f77dd','#d85a30','#639922','#ba7517','#378add','#d4537e'];
   const periodicIds = [
-    'weeklyIncome','savingsWeekly','carOwnership','fuelWeekly','tollsWeekly',
+    'weeklyIncome','emergencySavings','notEmergencySavings','regularSavings','carOwnership','fuelWeekly','tollsWeekly',
     'groceries','takeaway','medical','personal','pets','energy','internet','mobile','household','entertainment','gifts','career','ai','donations'
   ];
   const periodOptions = [
     ['weekly','Weekly'],['fortnightly','Fortnightly'],['monthly','Monthly'],['quarterly','Quarterly'],['annually','Annually']
   ];
-  const defaultPeriods = { weeklyIncome:'annually' };
+  const defaultPeriods = { weeklyIncome:'annually', energy:'annually' };
   const weeklyFactors = { weekly:1, fortnightly:1/2, monthly:12/52, quarterly:4/52, annually:1/52 };
-  const ids = [
-    'purchasePrice','strata','council','water','weeklyIncome','cashContribution','savingsWeekly','propertyType','govtEquity','interestRate','loanTerm','housingTarget',
-    'carOwnership','fuelWeekly','tollsWeekly',
-    'groceries','takeaway','medical','personal','pets','energy','internet','mobile','household','entertainment','gifts','career','ai','donations'
-  ].concat(periodicIds.map(id => id + 'Period'));
   const livingIds = ['groceries','takeaway','medical','personal','pets','energy','internet','mobile','household','entertainment','gifts','career','ai','donations'];
+  const sharedPeriodicIds = periodicIds.filter(id => !livingIds.includes(id));
+  const sharedIds = [
+    'purchasePrice','strata','council','water','weeklyIncome','cashContribution','emergencySavings','notEmergencySavings','regularSavings',
+    'propertyType','govtEquity','interestRate','loanTerm','housingTarget','carOwnership','fuelWeekly','tollsWeekly'
+  ].concat(sharedPeriodicIds.map(id => id + 'Period'));
+  const profileIds = livingIds.concat(livingIds.map(id => id + 'Period'));
   const $ = id => document.getElementById(id);
   const num = id => Math.max(0, Number.parseFloat($(id)?.value) || 0);
   const weeklyNum = id => num(id) * (weeklyFactors[$(id + 'Period')?.value] || 1);
@@ -399,12 +427,37 @@
 
   addPeriodControls();
 
-  const builtIns = {};
-  ids.forEach(id => {
-    const el = $(id);
-    if (!el) return;
-    builtIns[id] = el.type === 'checkbox' ? el.checked : el.value;
+  function captureValues(list) {
+    const out = {};
+    list.forEach(id => {
+      const el = $(id);
+      if (el) out[id] = el.type === 'checkbox' ? el.checked : el.value;
+    });
+    return out;
+  }
+
+  function restoreValues(values, list) {
+    list.forEach(id => {
+      const el = $(id);
+      if (!el || values?.[id] === undefined) return;
+      if (el.type === 'checkbox') el.checked = Boolean(values[id]); else el.value = values[id];
+    });
+  }
+
+  const sharedBuiltIns = captureValues(sharedIds);
+  const looseBuiltIns = captureValues(profileIds);
+  const tightBuiltIns = Object.assign({}, looseBuiltIns, {
+    groceries:'275', takeaway:'0', medical:'50', personal:'23', pets:'80', energy:'1268.94',
+    internet:'21.54', mobile:'10', household:'40', entertainment:'6', gifts:'19.23', career:'20', ai:'6', donations:'10',
+    groceriesPeriod:'weekly', takeawayPeriod:'weekly', medicalPeriod:'weekly', personalPeriod:'weekly', petsPeriod:'weekly', energyPeriod:'annually',
+    internetPeriod:'weekly', mobilePeriod:'weekly', householdPeriod:'weekly', entertainmentPeriod:'weekly', giftsPeriod:'weekly', careerPeriod:'weekly', aiPeriod:'weekly', donationsPeriod:'weekly'
   });
+  const profileBuiltIns = { loose:looseBuiltIns, tight:tightBuiltIns };
+  let profileState = {
+    loose:Object.assign({}, profileBuiltIns.loose),
+    tight:Object.assign({}, profileBuiltIns.tight)
+  };
+  let activeProfile = 'loose';
 
   function setTab(name) {
     ['overview','budget'].forEach(tab => {
@@ -474,7 +527,7 @@
     const fuel = weeklyNum('fuelWeekly');
     const transport = weeklyNum('carOwnership') + fuel + weeklyNum('tollsWeekly');
     const living = weeklyLiving();
-    const savings = weeklyNum('savingsWeekly');
+    const savings = weeklyNum('emergencySavings') + weeklyNum('notEmergencySavings') + weeklyNum('regularSavings');
     const total = housing + transport + living + savings;
     const surplus = income - total;
     const monthlySurplus = surplus * 52 / 12;
@@ -540,19 +593,32 @@
     updateBudgetLabels();
   }
 
-  function serialise() {
-    const out = {};
-    ids.forEach(id => {
-      const el = $(id); if (!el) return;
-      out[id] = el.type === 'checkbox' ? el.checked : el.value;
-    });
-    return out;
+  function captureActiveProfile() {
+    profileState[activeProfile] = captureValues(profileIds);
   }
-  function restore(values) {
-    ids.forEach(id => {
-      const el = $(id); if (!el || values[id] === undefined) return;
-      if (el.type === 'checkbox') el.checked = Boolean(values[id]); else el.value = values[id];
-    });
+  function updateProfileButtons() {
+    ['tight','loose'].forEach(name => $('profile-' + name).setAttribute('aria-pressed', String(activeProfile === name)));
+  }
+  function switchProfile(name) {
+    if (!profileState[name] || name === activeProfile) return;
+    captureActiveProfile();
+    activeProfile = name;
+    restoreValues(profileState[name], profileIds);
+    syncPeriodState();
+    updateProfileButtons();
+    calc();
+  }
+  function serialise() {
+    captureActiveProfile();
+    return {
+      version:3,
+      activeProfile,
+      shared:captureValues(sharedIds),
+      profiles:{
+        loose:Object.assign({}, profileState.loose),
+        tight:Object.assign({}, profileState.tight)
+      }
+    };
   }
   function syncPeriodState() {
     periodicIds.forEach(id => {
@@ -575,13 +641,39 @@
     const btn = $('saveDefaults'); const old = btn.textContent; btn.textContent = 'Saved'; setTimeout(() => btn.textContent = old, 900);
   }
   function loadSaved() {
-    try { const raw = localStorage.getItem(STORAGE_KEY); if (raw) restore(JSON.parse(raw)); } catch (_) {}
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) {
+        const saved = JSON.parse(raw);
+        restoreValues(saved.shared || {}, sharedIds);
+        profileState.loose = Object.assign({}, profileBuiltIns.loose, saved.profiles?.loose || {});
+        profileState.tight = Object.assign({}, profileBuiltIns.tight, saved.profiles?.tight || {});
+        if (saved.activeProfile === 'tight' || saved.activeProfile === 'loose') activeProfile = saved.activeProfile;
+      } else {
+        const legacyRaw = localStorage.getItem(LEGACY_STORAGE_KEY);
+        if (legacyRaw) restoreValues(JSON.parse(legacyRaw), sharedIds);
+      }
+    } catch (_) {}
+    restoreValues(profileState[activeProfile], profileIds);
+    updateProfileButtons();
   }
   function reset() {
-    restore(builtIns); syncPeriodState(); localStorage.removeItem(STORAGE_KEY); calc();
+    restoreValues(sharedBuiltIns, sharedIds);
+    profileState = {
+      loose:Object.assign({}, profileBuiltIns.loose),
+      tight:Object.assign({}, profileBuiltIns.tight)
+    };
+    activeProfile = 'loose';
+    restoreValues(profileState.loose, profileIds);
+    syncPeriodState();
+    updateProfileButtons();
+    localStorage.removeItem(STORAGE_KEY);
+    localStorage.removeItem(LEGACY_STORAGE_KEY);
+    calc();
   }
 
   document.querySelectorAll('.tab-btn').forEach(btn => btn.addEventListener('click', () => setTab(btn.id.includes('overview') ? 'overview' : 'budget')));
+  document.querySelectorAll('.profile-btn').forEach(btn => btn.addEventListener('click', () => switchProfile(btn.id.endsWith('tight') ? 'tight' : 'loose')));
   document.querySelectorAll('input,select').forEach(el => el.addEventListener('input', calc));
   document.querySelectorAll('.period-select').forEach(select => select.addEventListener('change', () => changePeriod(select)));
   $('propertyType').addEventListener('change', calc);
