@@ -379,8 +379,8 @@
 (() => {
   'use strict';
   const MAX_LOAN = 304000;
-  const STORAGE_KEY = 'propertyBudgetCalculator.v3';
-  const LEGACY_STORAGE_KEY = 'propertyBudgetCalculator.v2';
+  const STORAGE_KEY = 'propertyBudgetCalculator.v4';
+  const OBSOLETE_STORAGE_KEYS = ['propertyBudgetCalculator.v3','propertyBudgetCalculator.v2'];
   const COLORS = ['#2a78d6','#1d9e75','#ef9f27','#e24b4a','#7f77dd','#d85a30','#639922','#ba7517','#378add','#d4537e'];
   const periodicIds = [
     'weeklyIncome','emergencySavings','notEmergencySavings','regularSavings','carOwnership','fuelWeekly','tollsWeekly',
@@ -415,6 +415,7 @@
       const select = document.createElement('select');
       select.id = id + 'Period';
       select.className = 'period-select';
+      select.autocomplete = 'off';
       select.setAttribute('aria-label', input.closest('.budget-row').querySelector('label')?.textContent + ' payment frequency');
       select.innerHTML = periodOptions.map(([value,label]) => '<option value="' + value + '">' + label + '</option>').join('');
       select.value = defaultPeriods[id] || 'weekly';
@@ -425,6 +426,7 @@
     });
   }
 
+  document.querySelectorAll('input,select').forEach(el => el.setAttribute('autocomplete','off'));
   addPeriodControls();
 
   function captureValues(list) {
@@ -611,7 +613,7 @@
   function serialise() {
     captureActiveProfile();
     return {
-      version:3,
+      version:4,
       activeProfile,
       shared:captureValues(sharedIds),
       profiles:{
@@ -649,9 +651,6 @@
         profileState.loose = Object.assign({}, profileBuiltIns.loose, saved.profiles?.loose || {});
         profileState.tight = Object.assign({}, profileBuiltIns.tight, saved.profiles?.tight || {});
         if (saved.activeProfile === 'tight' || saved.activeProfile === 'loose') activeProfile = saved.activeProfile;
-      } else {
-        const legacyRaw = localStorage.getItem(LEGACY_STORAGE_KEY);
-        if (legacyRaw) restoreValues(JSON.parse(legacyRaw), sharedIds);
       }
     } catch (_) {}
     restoreValues(profileState[activeProfile], profileIds);
@@ -668,7 +667,19 @@
     syncPeriodState();
     updateProfileButtons();
     localStorage.removeItem(STORAGE_KEY);
-    localStorage.removeItem(LEGACY_STORAGE_KEY);
+    OBSOLETE_STORAGE_KEYS.forEach(key => localStorage.removeItem(key));
+    calc();
+  }
+
+  function initialise() {
+    restoreValues(sharedBuiltIns, sharedIds);
+    profileState = {
+      loose:Object.assign({}, profileBuiltIns.loose),
+      tight:Object.assign({}, profileBuiltIns.tight)
+    };
+    activeProfile = 'loose';
+    loadSaved();
+    syncPeriodState();
     calc();
   }
 
@@ -704,9 +715,10 @@
     }
   });
 
-  loadSaved();
-  syncPeriodState();
-  calc();
+  initialise();
+  window.addEventListener('pageshow', event => {
+    if (!event.persisted) initialise();
+  });
 })();
 </script>
 </body>
